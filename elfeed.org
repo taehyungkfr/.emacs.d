@@ -1,0 +1,20 @@
+#+TITLE: Elfeed Index
+* Blogs                                                              :elfeed:
+** Software Development                                                 :dev:
+*** [[https://kubernetes.io/feed.xml][Kubernetes]]                                                          :k8s:
+*** [[https://blog.golang.org/feed.atom][Go]]                                                               :golang:
+** 뉴스                                                                :news:
+*** 헤드라인                                                       :headline:
+**** [[https://news.sbs.co.kr/news/ReplayRssFeed.do?prog_cd=R1&plink=RSSREADER][SBS:8시]]                                                            :sbs:
+**** [[http://rss.kmib.co.kr/data/kmibRssAll.xml][국민일보]]                                                          :kmib:
+**** [[https://rss.joins.com/joins_homenews_list.xml][중앙일보]]                                            :conservative:joins:
+**** [[http://www.hani.co.kr/rss/][한겨레]]                                                    :liberal:hani:
+*** 경제                                                            :economy:
+**** [[https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=02&plink=RSSREADER][SBS]]                                                                :sbs:
+**** [[http://rss.kmib.co.kr/data/kmibEcoRss.xml][국민일보]]                                                          :kmib:
+*** 정치                                                           :politics:
+**** [[https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=02&plink=RSSREADER][SBS]]                                                                :sbs:
+*** IT                                                                   :it:
+**** [[https://www.itworld.co.kr/rss/feed/index.php][ITWORLD]]                                                        :itworld:
+**** [[https://it.donga.com/feeds/rss][동아일보]]                                            :conservative:donga:
+**** https://hnrss.org/frontpage                                     :hacker:

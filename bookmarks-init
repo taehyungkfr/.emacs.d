@@ -1,0 +1,57 @@
+;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*-
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("feed-News:IT"
+ (location . "@2-day-ago +news +it")
+ (tags "it" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-News:Headline:SBS:8hour"
+ (location . "@1-day-ago +news +headline +sbs")
+ (tags "sbs" "headline" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-News:Headline:Hani"
+ (location . "@1-day-ago +news +headline +hani")
+ (tags "hani" "headline" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-News:Headline:Joins"
+ (location . "@1-day-ago +news +headline +joins")
+ (tags "joins" "headline" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-News:Headline:Kmib"
+ (location . "@1-day-ago +news +headline +kmib")
+ (tags "kmib" "headline" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-News:Economy:Kmib"
+ (location . "@1-day-ago +news +economy +kmib")
+ (tags "kmib" "economy" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-News:Economy:SBS"
+ (location . "@1-day-ago +news +economy +sbs")
+ (tags "sbs" "economy" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-Dev"
+ (location . "@3-month-ago +dev")
+ (tags "dev" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-News:Economy"
+ (location . "@1-day-ago +news +economy")
+ (tags "economy" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("feed-News:Headline"
+ (location . "@1-day-ago +news +headline")
+ (tags "headline" "news" "unread")
+ (handler . elfeed-search-bookmark-handler))
+("org-feedIndex"
+ (filename . "~/.emacs.d/elfeed.org"))
+("el-pers"
+ (filename . "~/.emacs.d/pers.el"))
+("org:inbox"
+ (filename . "~/org/inbox.org"))
+("org-sys:my"
+ (filename . "~/.emacs.d/my.org"))
+("org:pers"
+ (filename . "~/org/pers.org"))
+("org:refs"
+ (filename . "~/org/refs.org"))
+)
