@@ -586,6 +586,17 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (remove-hook 'olivetti-mode-on-hook 'visual-line-mode))
 #+end_src
 
+** Ibuffer
+
+#+begin_src emacs-lisp
+(defalias 'list-buffers 'ibuffer)
+(defun ibuffer-mode-setup ()
+  (setq ibuffer-expert t
+        ibuffer-default-sorting-mode 'major-mode)
+  (ibuffer-auto-mode 1))
+(add-hook 'ibuffer-mode-hook 'ibuffer-mode-setup)
+#+end_src
+
 ** Vterm
 
 #+begin_src emacs-lisp
