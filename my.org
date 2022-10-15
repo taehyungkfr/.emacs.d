@@ -76,6 +76,9 @@
     ob-go                         ; Golang org babel
     go-tag                        ; Golang support tag
 
+    ;;;; Rust
+    rustic
+
     ;;;; Completion
     consult
     consult-projectile
@@ -721,6 +724,13 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 (add-hook 'go-mode-hook 'go-mode-setup)
 (add-hook 'go-mode-hook 'lsp-deferred)
+#+end_src
+
+** Rust
+
+#+begin_src emacs-lisp
+(require 'rustic)
+(setq rust-indent-offset 2)
 #+end_src
 
 ** Json
