@@ -43,6 +43,7 @@
     paredit                       ; 괄호 편집 유틸
     yasnippet-snippets            ; 스니펫 모음
     expand-region                 ; 선택 영역 늘리고 줄이는 유틸
+    pdf-tools                     ; PDF 뷰어
 
     ;;;; Evil
     evil                          ; Vim mode support
