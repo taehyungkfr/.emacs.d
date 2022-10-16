@@ -604,6 +604,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (require 'vterm)
+(setq vterm-always-compile-module t)
 
 (defadvice vterm (after kill-with-no-query nil activate)
   (set-process-query-on-exit-flag (get-buffer-process ad-return-value) nil))
