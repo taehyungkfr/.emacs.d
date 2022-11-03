@@ -698,8 +698,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (defun undo-tree-mode-setup ()
-  (setq undo-tree-visualizer-diff t
-        undo-tree-visualizer-timestamps t
+  (setq undo-tree-visualizer-diff nil
+        undo-tree-visualizer-timestamps nil
         undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
   (global-undo-tree-mode 1))
 
