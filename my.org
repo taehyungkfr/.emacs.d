@@ -677,9 +677,10 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
         lsp-completion-provider :none ;; use corfu
         lsp-diagnostics-provider :flycheck)
 
-  (add-to-list 'lsp-file-watch-ignored-directories
-               "[/\\\\]\\.artifacts\\'"
-               "[/\\\\][^/\\\\]*\\.\\(json\\|html\\|yaml\\)$"))
+  ;; https://emacs-lsp.github.io/lsp-mode/page/file-watchers
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.vendor\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.artifacts\\'")
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\][^/\\\\]*\\.\\(json\\|html\\|yaml\\)$"))
 #+end_src
 
 ** Lisp
