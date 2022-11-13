@@ -301,14 +301,24 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (require 'smart-mode-line)
-;; (setq sml/no-confirm-load-theme t)
 (setq sml/show-eol t
       rm-blacklist
       (format "^ \\(%s\\)$"
               (mapconcat #'identity
-                         '("Projectile.*" "LSP.*" "Lens" "Paredit" "WK" "yas" "Undo-Tree" "my-key" "ElDoc" "unimpaired" "hs")
+                         '("Projectile.*"
+                           "LSP.*"
+                           "Lens"
+                           "Paredit"
+                           "WK"
+                           "yas"
+                           "Undo-Tree"
+                           "ARev"
+                           "ElDoc"
+                           "unimpaired"
+                           "hs"
+                           "EvilOrg"
+                           "my-key")
                          "\\|")))
-
 (add-to-list 'sml/replacer-regexp-list '("^pjts/" ":PJT:"))
 (sml/setup)
 #+end_src
