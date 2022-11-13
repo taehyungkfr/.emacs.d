@@ -29,7 +29,6 @@
     diff-hl                       ; Git 커밋되지 않은 변경사항 강조
     magit                         ; Git 유틸
     page-break-lines              ; 페이지 나누기(^L) 표시 변경
-    flycheck                      ; 구문 오류 분석
     popup                         ; 툴팁
     google-translate              ; 번역
     htmlize                       ; decorations to HTML
@@ -66,17 +65,18 @@
     org-jira                      ; Jira
     ox-gfm                        ; github 스타일의 마크다운 내보내기
 
-    ;;;; LSP
-    lsp-mode                      ; LSP mode
-    lsp-ui                        ; LSP UI
-    lsp-treemacs                  ; LSP treemacs 통합
-    lsp-java                      ; LSP Java
+    ;;;; Eglot
+    eglot
+    consult-eglot
+
+    ;;;; Debug
     dap-mode                      ; Debug
 
-    ;;;; Golang
-    go-mode                       ; Golang
-    ob-go                         ; Golang org babel
-    go-tag                        ; Golang support tag
+    ;;;; Go
+    go-mode                       ; Go 모드
+    ob-go                         ; Go org babel
+    go-tag                        ; Go 태그 자동 생성
+    flymake-go-staticcheck        ; Go 정적분석
 
     ;;;; Rust
     rustic
@@ -651,7 +651,20 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (setq rmh-elfeed-org-files (list "~/.emacs.d/elfeed.org"))
 #+end_src
 
-** Lsp
+** Eglot
+
+#+begin_src emacs-lisp
+(require 'eglot)
+(require 'consult-eglot)
+(setq-default eglot-workspace-configuration
+              '((:gopls .
+                        ((staticcheck . t)
+                         (matcher . "CaseSensitive")))))
+
+(add-to-list 'projectile-globally-ignored-directories '"^vendor$")
+#+end_src
+
+** COMMENT Lsp
 
 #+begin_src emacs-lisp
 (require 'lsp-mode)
@@ -707,21 +720,47 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (require 'go-mode)
 (defun go-mode-setup()
   (setq tab-width 2
-       ;; indent-tabs-mode t
         compile-command "go test -v .")
 
   (hs-minor-mode t)
   (local-set-key (kbd "C-c C-c") 'compile)
-
-  ;; go install github.com/go-delve/delve/cmd/dlv@latest
-  (require 'dap-dlv-go)
-
-  (add-hook 'before-save-hook 'lsp-format-buffer t t)
-  (add-hook 'before-save-hook 'lsp-organize-imports t t)
   (add-hook 'before-save-hook 'gofmt-before-save))
 
 (add-hook 'go-mode-hook 'go-mode-setup)
-(add-hook 'go-mode-hook 'lsp-deferred)
+
+;; go install github.com/go-delve/delve/cmd/dlv@latest
+(require 'dap-dlv-go)
+
+;; go install honnef.co/go/tools/cmd/staticcheck@latest
+(require 'flymake-go-staticcheck)
+(add-hook 'go-mode-hook #'flymake-go-staticcheck-enable)
+(add-hook 'go-mode-hook #'flymake-mode)
+
+(with-eval-after-load 'eglot
+  (progn
+    (require 'project)
+    (defun project-find-go-module (dir)
+      (when-let ((root (locate-dominating-file dir "go.mod")))
+        (cons 'go-module root)))
+    (cl-defmethod project-root ((project (head go-module)))
+      (cdr project))
+
+    (add-hook 'project-find-functions #'project-find-go-module)
+
+    (defun eglot-interactively-organize-imports ()
+      (call-interactively 'eglot-code-action-organize-imports))
+    (defun eglot-install-save-hook ()
+      (add-hook 'before-save-hook #'eglot-interactively-organize-imports -20 t)
+      (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
+    (add-hook 'go-mode-hook #'eglot-install-save-hook)
+    (add-hook 'go-mode-hook #'eglot-ensure)))
+
+;; (with-eval-after-load 'lsp-mode
+;;   (progn
+;;     (message "lsp-mode loading")
+;;     (add-hook 'before-save-hook 'lsp-format-buffer t t)
+;;     (add-hook 'before-save-hook 'lsp-organize-imports t t)
+;;     (add-hook 'go-mode-hook 'lsp-deferred)))
 #+end_src
 
 ** Rust
@@ -745,7 +784,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
           (lambda () (highlight-indentation-mode)))
 #+end_src
 
-** Java
+** COMMENT Java
 
 #+begin_src emacs-lisp
 (require 'lsp-java)
@@ -838,7 +877,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 #+end_src
 
-** Bindings for Lsp
+** COMMENT Bindings for Lsp
 
 #+begin_src emacs-lisp
 (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
