@@ -44,6 +44,7 @@
     yasnippet-snippets            ; 스니펫 모음
     expand-region                 ; 선택 영역 늘리고 줄이는 유틸
     pdf-tools                     ; PDF 뷰어
+    smart-mode-line               ; 스마트 모드 라인
 
     ;;;; Evil
     evil                          ; Vim mode support
@@ -277,28 +278,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (yas-global-mode 1)
 #+end_src
 
-마이너모드는 라인모드에서 보이지 않도록 설정
-
-#+begin_src emacs-lisp
-;; https://emacs.stackexchange.com/questions/3925/hide-list-of-minor-modes-in-mode-line
-(define-minor-mode minor-mode-blackout-mode
-  "마이너모드는 라인모드에서 보이지 않도록 설정한다."
-  :global t
-  :lighter nil)
-
-(catch 'done
-  (mapc (lambda (x)
-          (when (and (consp x)
-                     (equal (cadr x) '("" minor-mode-alist)))
-            (let ((original (copy-sequence x)))
-              (setcar x 'minor-mode-blackout-mode)
-              (setcdr x (list "" original)))
-            (throw 'done t)))
-        mode-line-modes))
-
-(minor-mode-blackout-mode 1)
-#+end_src
-
 ** Visual
 
 #+begin_src emacs-lisp
@@ -316,6 +295,22 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+begin_src emacs-lisp
 (setq exec-path-from-shell-variables '("PATH" "TMPDIR" "GOROOT" "GOPATH" "JAVA_HOME"))
 (exec-path-from-shell-initialize)
+#+end_src
+
+** Mode Line
+
+#+begin_src emacs-lisp
+(require 'smart-mode-line)
+;; (setq sml/no-confirm-load-theme t)
+(setq sml/show-eol t
+      rm-blacklist
+      (format "^ \\(%s\\)$"
+              (mapconcat #'identity
+                         '("Projectile.*" "LSP.*" "Lens" "Paredit" "WK" "yas" "Undo-Tree" "my-key" "ElDoc" "unimpaired" "hs")
+                         "\\|")))
+
+(add-to-list 'sml/replacer-regexp-list '("^pjts/" ":PJT:"))
+(sml/setup)
 #+end_src
 
 ** Evil
