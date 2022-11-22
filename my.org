@@ -783,6 +783,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Json
 
 #+begin_src emacs-lisp
+(add-hook 'json-mode-hook 'highlight-indentation-mode)
 (with-eval-after-load 'json-mode
   (setq js-indent-level tab-width))
 #+end_src
@@ -790,8 +791,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Yaml
 
 #+begin_src emacs-lisp
-(add-hook 'yaml-mode-hook
-          (lambda () (highlight-indentation-mode)))
+(add-hook 'yaml-mode-hook 'highlight-indentation-mode)
 #+end_src
 
 ** COMMENT Java
