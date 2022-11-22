@@ -887,6 +887,16 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 #+end_src
 
+** Bindings for Eglot
+
+#+begin_src emacs-lisp
+(define-key eglot-mode-map (kbd "g d") 'xref-find-definitions)
+(define-key eglot-mode-map (kbd "g r") 'xref-find-references)
+(define-key eglot-mode-map (kbd "C-c l r") 'eglot-rename)
+(define-key eglot-mode-map (kbd "C-c l o") 'eglot-code-action-organize-imports)
+(define-key eglot-mode-map (kbd "C-c l h") 'eldoc)
+#+end_src
+
 ** COMMENT Bindings for Lsp
 
 #+begin_src emacs-lisp
