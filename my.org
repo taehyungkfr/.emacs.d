@@ -909,11 +909,14 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Bindings for Eglot
 
 #+begin_src emacs-lisp
-(define-key eglot-mode-map (kbd "g d") 'xref-find-definitions)
-(define-key eglot-mode-map (kbd "g r") 'xref-find-references)
+(define-key eglot-mode-map (kbd "C-c l g d") 'xref-find-definitions)
+(define-key eglot-mode-map (kbd "C-c l g i") 'eglot-find-implementation)
+(define-key eglot-mode-map (kbd "C-c l g r") 'xref-find-references)
 (define-key eglot-mode-map (kbd "C-c l r") 'eglot-rename)
 (define-key eglot-mode-map (kbd "C-c l o") 'eglot-code-action-organize-imports)
 (define-key eglot-mode-map (kbd "C-c l h") 'eldoc)
+
+(evil-collection-define-key 'normal 'eglot-mode-map "gr" 'xref-find-references)
 #+end_src
 
 ** COMMENT Bindings for Lsp
@@ -975,6 +978,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Bindings for Base
 
 #+begin_src emacs-lisp
+(define-key my-key-map (kbd "C-<tab>") 'treemacs)
+
 (define-key my-key-map (kbd "C-SPC") 'toggle-input-method)
 
 (define-key my-key-map (kbd "C-M-f") 'toggle-frame-fullscreen)
