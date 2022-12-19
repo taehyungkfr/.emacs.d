@@ -661,6 +661,27 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (setq rmh-elfeed-org-files (list "~/.emacs.d/elfeed.org"))
 #+end_src
 
+** Projectile
+
+#+begin_src emacs-lisp
+(require 'projectile)
+(when (executable-find "rg")
+  (setq projectile-globally-ignored-directories
+        '(".git"
+          ".vscode"
+          ".idea"
+          ".svn"
+          ".tox"
+          ".cache"
+          "vendor")
+        projectile-generic-command
+        (let ((rg-cmd ""))
+          (dolist (dir projectile-globally-ignored-directories)
+            (setq rg-cmd (format "%s --glob '!%s'" rg-cmd dir)))
+          (concat "rg -0 --files --color=never --hidden " rg-cmd))
+        projectile-git-command projectile-generic-command))
+#+end_src
+
 ** Eglot
 
 #+begin_src emacs-lisp
@@ -670,8 +691,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
               '((:gopls .
                         ((staticcheck . t)
                          (matcher . "CaseSensitive")))))
-
-(add-to-list 'projectile-globally-ignored-directories '"^vendor$")
 #+end_src
 
 ** COMMENT Lsp
