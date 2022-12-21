@@ -90,7 +90,6 @@
     orderless
     vertico
     corfu
-    corfu-doc
     corfu-terminal
 
     ;;;; Theme
@@ -545,16 +544,14 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (consult-projectile-mode 1)
 
 (require 'corfu)
-(require 'corfu-doc)
+(require 'corfu-popupinfo)
 (require 'corfu-terminal)
 (global-corfu-mode 1)
 
 (setq corfu-cycle t
       corfu-auto t
       corfu-count 15
-      corfu-echo-documentation nil ; corfu-doc 대체
       corfu-auto-delay 0)
-(add-hook 'corfu-mode-hook 'corfu-doc-mode)
 (unless (display-graphic-p)
   (corfu-terminal-mode +1))
 #+end_src
@@ -958,9 +955,9 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (define-key my-key-map (kbd "C-h M") 'consult-minor-mode-menu)
 (define-key minibuffer-local-map (kbd "C-l") 'my/minibuffer-backward-kill-word)
 
-(define-key corfu-map (kbd "M-d") 'corfu-doc-toggle)
-(define-key corfu-map (kbd "M-p") 'corfu-doc-scroll-down)
-(define-key corfu-map (kbd "M-n") 'corfu-doc-scroll-up)
+(define-key corfu-map (kbd "M-d") 'corfu-popupinfo-toggle)
+(define-key corfu-map (kbd "M-p") 'corfu-popupinfo-scroll-down)
+(define-key corfu-map (kbd "M-n") 'corfu-popupinfo-scroll-up)
 #+end_src
 
 ** Bindings for [[https://orgmode.org][Org]]
