@@ -69,6 +69,12 @@
     eglot
     consult-eglot
 
+    ;;; LSP
+    ;; lsp-mode                      ; LSP mode
+    ;; lsp-ui                        ; LSP UI
+    ;; lsp-treemacs                  ; LSP treemacs 통합
+    ;; lsp-java                      ; LSP Java
+
     ;;;; Debug
     dap-mode                      ; Debug
 
@@ -736,7 +742,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
         lsp-headerline-breadcrumb-enable nil
         lsp-modeline-code-actions-enable nil
         lsp-completion-provider :none ;; use corfu
-        lsp-diagnostics-provider :flycheck)
+        lsp-diagnostics-provider :flymake)
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/file-watchers
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.vendor\\'")
@@ -777,12 +783,9 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
   (hs-minor-mode t)
   (local-set-key (kbd "C-c C-c") 'compile)
-  (add-hook 'before-save-hook 'gofmt-before-save))
+  (add-hook 'before-save-hook #'gofmt-before-save))
 
 (add-hook 'go-mode-hook 'go-mode-setup)
-
-;; go install github.com/go-delve/delve/cmd/dlv@latest
-(require 'dap-dlv-go)
 
 ;; go install honnef.co/go/tools/cmd/staticcheck@latest
 (require 'flymake-go-staticcheck)
@@ -801,13 +804,17 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
     (add-hook 'project-find-functions #'project-find-go-module)
 
     (add-hook 'after-save-hook (apply-partially #'eglot-organize-imports 'go-mode))
+
     (add-hook 'go-mode-hook #'eglot-ensure)))
 
 ;; (with-eval-after-load 'lsp-mode
 ;;   (progn
+;;     ;; go install github.com/go-delve/delve/cmd/dlv@latest
+;;     (require 'dap-dlv-go)
+
 ;;     (message "lsp-mode loading")
-;;     (add-hook 'before-save-hook 'lsp-format-buffer t t)
-;;     (add-hook 'before-save-hook 'lsp-organize-imports t t)
+;;     (add-hook 'before-save-hook #'lsp-format-buffer)
+;;     (add-hook 'before-save-hook #'lsp-organize-imports)
 ;;     (add-hook 'go-mode-hook 'lsp-deferred)))
 #+end_src
 
