@@ -298,8 +298,9 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Environment
 
 #+begin_src emacs-lisp
-(setq exec-path-from-shell-variables '("PATH" "TMPDIR" "GOROOT" "GOPATH" "JAVA_HOME"))
-(exec-path-from-shell-initialize)
+(when (memq window-system '(mac ns x))
+  (setq exec-path-from-shell-variables '("PATH" "TMPDIR" "GOROOT" "GOPATH" "JAVA_HOME"))
+  (exec-path-from-shell-initialize))
 #+end_src
 
 ** Mode Line
@@ -612,44 +613,45 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Vterm
 
 #+begin_src emacs-lisp
-(require 'vterm)
-(setq vterm-always-compile-module t)
+(when (memq window-system '(mac ns x))
+  (require 'vterm)
+  (setq vterm-always-compile-module t)
 
-(defadvice vterm (after kill-with-no-query nil activate)
-  (set-process-query-on-exit-flag (get-buffer-process ad-return-value) nil))
+  (defadvice vterm (after kill-with-no-query nil activate)
+    (set-process-query-on-exit-flag (get-buffer-process ad-return-value) nil))
 
-(let ((last-vterm ""))
-  (defun toggle-vterm ()
-    (interactive)
-    (cond ((string-match-p "^\\vterm<[1-9][0-9]*>$" (buffer-name))
-           (goto-non-vterm-buffer))
-          ((get-buffer last-vterm) (switch-to-buffer last-vterm))
-          (t (vterm (setq last-vterm "vterm<1>")))))
+  (let ((last-vterm ""))
+    (defun toggle-vterm ()
+      (interactive)
+      (cond ((string-match-p "^\\vterm<[1-9][0-9]*>$" (buffer-name))
+             (goto-non-vterm-buffer))
+            ((get-buffer last-vterm) (switch-to-buffer last-vterm))
+            (t (vterm (setq last-vterm "vterm<1>")))))
 
-  (defun switch-vterm (n)
-    (let ((buffer-name (format "vterm<%d>" n)))
-      (setq last-vterm buffer-name)
-      (cond ((get-buffer buffer-name)
-             (switch-to-buffer buffer-name))
-            (t (vterm buffer-name)
-               (rename-buffer buffer-name)))))
+    (defun switch-vterm (n)
+      (let ((buffer-name (format "vterm<%d>" n)))
+        (setq last-vterm buffer-name)
+        (cond ((get-buffer buffer-name)
+               (switch-to-buffer buffer-name))
+              (t (vterm buffer-name)
+                 (rename-buffer buffer-name)))))
 
-  (defun goto-non-vterm-buffer ()
-    (let* ((r "^\\vterm<[1-9][0-9]*>$")
-           (vterm-buffer-p (lambda (b) (string-match-p r (buffer-name b))))
-           (non-vterms (cl-remove-if vterm-buffer-p (buffer-list))))
-      (when non-vterms
-        (switch-to-buffer (car non-vterms))))))
+    (defun goto-non-vterm-buffer ()
+      (let* ((r "^\\vterm<[1-9][0-9]*>$")
+             (vterm-buffer-p (lambda (b) (string-match-p r (buffer-name b))))
+             (non-vterms (cl-remove-if vterm-buffer-p (buffer-list))))
+        (when non-vterms
+          (switch-to-buffer (car non-vterms))))))
 
-(defun clear-comint ()
-  "Runs `comint-truncate-buffer' with the
+  (defun clear-comint ()
+    "Runs `comint-truncate-buffer' with the
 `comint-buffer-maximum-size' set to zero."
-  (interactive)
-  (let ((comint-buffer-maximum-size 0))
-    (comint-truncate-buffer)))
+    (interactive)
+    (let ((comint-buffer-maximum-size 0))
+      (comint-truncate-buffer)))
 
-(add-hook 'vterm-mode-hook
-          (lambda () (display-line-numbers-mode 0)))
+  (add-hook 'vterm-mode-hook
+            (lambda () (display-line-numbers-mode 0))))
 #+end_src
 
 ** Elfeed
@@ -1021,7 +1023,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 (define-key my-key-map (kbd "C-c T") 'google-translate-at-point)
 
-(dolist (n (number-sequence 1 9))
-  (define-key my-key-map (kbd (concat "M-" (int-to-string n)))
-    (lambda () (interactive) (switch-vterm n))))
+(when (memq window-system '(mac ns x))
+  (dolist (n (number-sequence 1 9))
+    (define-key my-key-map (kbd (concat "M-" (int-to-string n)))
+      (lambda () (interactive) (switch-vterm n)))))
 #+end_src
