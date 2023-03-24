@@ -332,11 +332,13 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Evil
 
 #+begin_src emacs-lisp
+(setq evil-want-integration t)
 (setq evil-want-keybinding nil)
+(setq evil-undo-system 'undo-tree)
 (require 'evil)
 (require 'evil-collection)
-(evil-mode 1)
 (evil-collection-init)
+(evil-mode 1)
 
 (require 'evil-org)
 (add-hook 'org-mode-hook 'evil-org-mode)
