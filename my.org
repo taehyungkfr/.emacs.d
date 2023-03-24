@@ -43,7 +43,6 @@
     yasnippet-snippets            ; 스니펫 모음
     expand-region                 ; 선택 영역 늘리고 줄이는 유틸
     pdf-tools                     ; PDF 뷰어
-    smart-mode-line               ; 스마트 모드 라인
 
     ;;;; Evil
     evil                          ; Vim mode support
@@ -301,32 +300,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (when (memq window-system '(mac ns x))
   (setq exec-path-from-shell-variables '("PATH" "TMPDIR" "GOROOT" "GOPATH" "JAVA_HOME"))
   (exec-path-from-shell-initialize))
-#+end_src
-
-** Mode Line
-
-#+begin_src emacs-lisp
-(require 'smart-mode-line)
-(setq sml/show-eol t
-      rm-blacklist
-      (format "^ \\(%s\\)$"
-              (mapconcat #'identity
-                         '("Projectile.*"
-                           "LSP.*"
-                           "Lens"
-                           "Paredit"
-                           "WK"
-                           "yas"
-                           "Undo-Tree"
-                           "ARev"
-                           "ElDoc"
-                           "unimpaired"
-                           "hs"
-                           "EvilOrg"
-                           "my-key")
-                         "\\|")))
-(add-to-list 'sml/replacer-regexp-list '("^pjts/" ":PJT:"))
-(sml/setup)
 #+end_src
 
 ** Evil
