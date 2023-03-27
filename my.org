@@ -221,6 +221,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
  display-time-default-load-average nil         ; Do not display the load average
  default-input-method "korean-hangul"          ; 기본 입력
  tab-width 2                                   ; Smaller tabs
+ c-basic-offset 2                              ; C 스타일 기본 들여쓰기
  fill-column 79                                ; Maximum line width
  truncate-lines t                              ; Don't fold lines
  indent-tabs-mode nil                          ; Use spaces instead of tabs
@@ -280,6 +281,28 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 (which-key-mode 1)
 (yas-global-mode 1)
+#+end_src
+
+라인에서 마이너 모드 숨김처리
+
+#+begin_src emacs-lisp
+;; https://emacs.stackexchange.com/questions/3925/hide-list-of-minor-modes-in-mode-line
+(define-minor-mode minor-mode-blackout-mode
+  "마이너모드는 라인모드에서 보이지 않도록 설정한다."
+  :global t
+  :lighter nil)
+
+(catch 'done
+  (mapc (lambda (x)
+          (when (and (consp x)
+                     (equal (cadr x) '("" minor-mode-alist)))
+            (let ((original (copy-sequence x)))
+              (setcar x 'minor-mode-blackout-mode)
+              (setcdr x (list "" original)))
+            (throw 'done t)))
+        mode-line-modes))
+
+(minor-mode-blackout-mode 1)
 #+end_src
 
 ** Visual
