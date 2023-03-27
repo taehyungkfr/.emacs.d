@@ -65,14 +65,14 @@
     ox-gfm                        ; github 스타일의 마크다운 내보내기
 
     ;;;; Eglot
-    eglot
-    consult-eglot
+    ;; eglot
+    ;; consult-eglot
 
     ;;; LSP
-    ;; lsp-mode                      ; LSP mode
-    ;; lsp-ui                        ; LSP UI
-    ;; lsp-treemacs                  ; LSP treemacs 통합
-    ;; lsp-java                      ; LSP Java
+    lsp-mode                      ; LSP mode
+    lsp-ui                        ; LSP UI
+    lsp-treemacs                  ; LSP treemacs 통합
+    lsp-java                      ; LSP Java
 
     ;;;; Debug
     dap-mode                      ; Debug
@@ -662,7 +662,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
         projectile-git-command projectile-generic-command))
 #+end_src
 
-** Eglot
+** COMMENT Eglot
 
 #+begin_src emacs-lisp
 (require 'eglot)
@@ -700,7 +700,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
                (eglot-execute-command server (intern command) arguments)))))))))
 #+end_src
 
-** COMMENT Lsp
+** Lsp
 
 #+begin_src emacs-lisp
 (require 'lsp-mode)
@@ -765,34 +765,33 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (add-hook 'go-mode-hook 'go-mode-setup)
 
 ;; go install honnef.co/go/tools/cmd/staticcheck@latest
-(require 'flymake-go-staticcheck)
-(add-hook 'go-mode-hook #'flymake-go-staticcheck-enable)
-(add-hook 'go-mode-hook #'flymake-mode)
+;; (require 'flymake-go-staticcheck)
+;; (add-hook 'go-mode-hook #'flymake-go-staticcheck-enable)
+;; (add-hook 'go-mode-hook #'flymake-mode)
 
-(with-eval-after-load 'eglot
-  (progn
-    (require 'project)
-    (defun project-find-go-module (dir)
-      (when-let ((root (locate-dominating-file dir "go.mod")))
-        (cons 'go-module root)))
-    (cl-defmethod project-root ((project (head go-module)))
-      (cdr project))
-
-    (add-hook 'project-find-functions #'project-find-go-module)
-
-    (add-hook 'after-save-hook (apply-partially #'eglot-organize-imports 'go-mode))
-
-    (add-hook 'go-mode-hook #'eglot-ensure)))
-
-;; (with-eval-after-load 'lsp-mode
+;; (with-eval-after-load 'eglot
 ;;   (progn
-;;     ;; go install github.com/go-delve/delve/cmd/dlv@latest
-;;     (require 'dap-dlv-go)
+;;     (require 'project)
+;;     (defun project-find-go-module (dir)
+;;       (when-let ((root (locate-dominating-file dir "go.mod")))
+;;         (cons 'go-module root)))
+;;     (cl-defmethod project-root ((project (head go-module)))
+;;       (cdr project))
 
-;;     (message "lsp-mode loading")
-;;     (add-hook 'before-save-hook #'lsp-format-buffer)
-;;     (add-hook 'before-save-hook #'lsp-organize-imports)
-;;     (add-hook 'go-mode-hook 'lsp-deferred)))
+;;     (add-hook 'project-find-functions #'project-find-go-module)
+
+;;     (add-hook 'after-save-hook (apply-partially #'eglot-organize-imports 'go-mode))
+
+;;     (add-hook 'go-mode-hook #'eglot-ensure)))
+
+(with-eval-after-load 'lsp-mode
+  (progn
+    ;; go install github.com/go-delve/delve/cmd/dlv@latest
+    (require 'dap-dlv-go)
+
+    (add-hook 'before-save-hook #'lsp-format-buffer)
+    (add-hook 'before-save-hook #'lsp-organize-imports)
+    (add-hook 'go-mode-hook 'lsp-deferred)))
 #+end_src
 
 ** Rust
@@ -816,13 +815,17 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (add-hook 'yaml-mode-hook 'highlight-indentation-mode)
 #+end_src
 
-** COMMENT Java
+** Java
 
 #+begin_src emacs-lisp
 (require 'lsp-java)
 (add-hook 'java-mode-hook 'lsp)
-;; JDK 8 지원 버전 (최신 버전은 jdk 11)
-(setq lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/0.57.0/jdt-language-server-0.57.0-202006172108.tar.gz")
+
+;; JDK 8 지원 버전
+;; (setq lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/0.57.0/jdt-language-server-0.57.0-202006172108.tar.gz")
+
+;; JDK latest
+(setq lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/snapshots/jdt-language-server-latest.tar.gz")
 
 ;; spring boot
 (require 'lsp-java-boot)
@@ -830,7 +833,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (add-hook 'java-mode-hook 'lsp-java-boot-lens-mode)
 
 ;; lombok설정. 절대 경로 필요
-(setq lombok-jar-path "~/.emacs.d/bin/lombok-1.18.jar")
+(setq lombok-jar-path (expand-file-name "bin/lombok-1.18.jar" user-emacs-directory))
 ;; (setq lsp-java-vmargs '("-noverify"
 ;;                         "-Xmx1G"
 ;;                         "-XX:+UseG1GC"
@@ -909,7 +912,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 #+end_src
 
-** Bindings for Eglot
+** COMMENT Bindings for Eglot
 
 #+begin_src emacs-lisp
 (define-key eglot-mode-map (kbd "C-c l g d") 'xref-find-definitions)
@@ -922,7 +925,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (evil-collection-define-key 'normal 'eglot-mode-map "gr" 'xref-find-references)
 #+end_src
 
-** COMMENT Bindings for Lsp
+** Bindings for Lsp
 
 #+begin_src emacs-lisp
 (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
