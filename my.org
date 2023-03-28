@@ -330,9 +330,16 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+begin_src emacs-lisp
 (setq evil-want-integration t)
 (setq evil-want-keybinding nil)
-(setq evil-undo-system 'undo-tree)
+
 (require 'evil)
 (require 'evil-collection)
+(setq evil-undo-system 'undo-tree)
+
+;; evil-collection mu4e 1.10 버전 호환성 이슈
+(defun mu4e--main-action-str (str &optional func-or-shortcut))
+(defun evil-collection-mu4e-update-main-view@override())
+(advice-add 'evil-collection-mu4e-update-main-view :override #'evil-collection-mu4e-update-main-view@override)
+
 (evil-collection-init)
 (evil-mode 1)
 
@@ -882,18 +889,23 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
         k8s-site-docs-url "https://kubernetes.io/docs/reference/generated/kubernetes-api/"))
 #+end_src
 
-** Mu4e
+** Mail
 
 #+begin_src emacs-lisp
 (require 'mu4e nil :noerror)
-(setq mu4e-get-mail-command "mbsync -a"
+(setq read-mail-command 'mu4e
+      mail-user-agent 'mu4e-user-agent
+      mu4e-get-mail-command "mbsync -a"
       mu4e-change-filenames-when-moving t
       mu4e-confirm-quit nil
+      mu4e-search-full t
+      mu4e-eldoc-support t
+      mu4e-notification-support t
+      mu4e-update-interval (* 2 60)
       mu4e-attachment-dir "~/Downloads/"
-      mu4e-split-view 'horizontal
       message-citation-line-format "%N @ %Y-%m-%dT%H:%M :\n"
       message-citation-line-function 'message-insert-formatted-citation-line
-      mu4e-headers-include-related nil
+      mu4e-search-include-related nil
       mu4e-headers-visible-lines 20
       mu4e-headers-visible-columns 80
       mu4e-headers-visible-lines 10
