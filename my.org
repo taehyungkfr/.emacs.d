@@ -321,9 +321,11 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Environment
 
 #+begin_src emacs-lisp
-(when (memq window-system '(mac ns x))
-  (setq exec-path-from-shell-variables '("PATH" "TMPDIR" "GOROOT" "GOPATH" "JAVA_HOME"))
-  (exec-path-from-shell-initialize))
+(defun my-exec-path-from-shell-initialize ()
+  (when (memq window-system '(mac ns x))
+    (setq exec-path-from-shell-variables '("PATH" "TMPDIR" "GOROOT" "GOPATH" "JAVA_HOME"))
+    (exec-path-from-shell-initialize)))
+(add-hook 'after-init-hook 'my-exec-path-from-shell-initialize)
 #+end_src
 
 ** Evil
