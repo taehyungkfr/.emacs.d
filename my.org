@@ -221,6 +221,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
  display-time-default-load-average nil         ; Do not display the load average
  default-input-method "korean-hangul"          ; 기본 입력
  tab-width 2                                   ; Smaller tabs
+ sh-basic-offset 2                             ; SHELL 스타일 기본 들여쓰기
  c-basic-offset 2                              ; C 스타일 기본 들여쓰기
  fill-column 79                                ; Maximum line width
  truncate-lines t                              ; Don't fold lines
