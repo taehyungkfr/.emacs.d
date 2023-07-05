@@ -73,15 +73,12 @@
     lsp-ui                        ; LSP UI
     lsp-treemacs                  ; LSP treemacs 통합
     lsp-java                      ; LSP Java
-
-    ;;;; Debug
-    dap-mode                      ; Debug
+    dap-mode                      ; LSP Debug
 
     ;;;; Go
     go-mode                       ; Go 모드
     ob-go                         ; Go org babel
     go-tag                        ; Go 태그 자동 생성
-    flymake-go-staticcheck        ; Go 정적분석
 
     ;;;; Rust
     rustic
