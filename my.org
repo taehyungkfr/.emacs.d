@@ -1016,24 +1016,18 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (define-key my-key-map (kbd "C-<tab>") 'treemacs)
-
-(define-key my-key-map (kbd "C-SPC") 'toggle-input-method)
-
 (define-key my-key-map (kbd "C-M-f") 'toggle-frame-fullscreen)
-
 (define-key my-key-map (kbd "C-x k") 'my/kill-this-buffer-unless-scratch)
-
 (define-key my-key-map (kbd "C-c o") 'olivetti-mode)
-
 (define-key my-key-map (kbd "C-c m") 'magit-status)
-
 (define-key my-key-map (kbd "C->") 'er/expand-region)
 (define-key my-key-map (kbd "C-<") 'er/contract-region)
-
 (define-key my-key-map (kbd "C-c T") 'google-translate-at-point)
 
 (when (memq window-system '(mac ns x))
   (dolist (n (number-sequence 1 9))
     (define-key my-key-map (kbd (concat "M-" (int-to-string n)))
-      (lambda () (interactive) (switch-vterm n)))))
+      (lambda () (interactive) (switch-vterm n))))
+  (define-key my-key-map (kbd "M-`")
+    (lambda () (interactive) (switch-vterm 10))))
 #+end_src
