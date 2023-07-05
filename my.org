@@ -801,28 +801,23 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ;; (add-hook 'go-mode-hook #'flymake-mode)
 
 ;; (with-eval-after-load 'eglot
-;;   (progn
-;;     (require 'project)
-;;     (defun project-find-go-module (dir)
-;;       (when-let ((root (locate-dominating-file dir "go.mod")))
-;;         (cons 'go-module root)))
-;;     (cl-defmethod project-root ((project (head go-module)))
-;;       (cdr project))
+;;   (require 'project)
+;;   (defun project-find-go-module (dir)
+;;     (when-let ((root (locate-dominating-file dir "go.mod")))
+;;       (cons 'go-module root)))
+;;   (cl-defmethod project-root ((project (head go-module)))
+;;     (cdr project))
 
-;;     (add-hook 'project-find-functions #'project-find-go-module)
-
-;;     (add-hook 'after-save-hook (apply-partially #'eglot-organize-imports 'go-mode))
-
-;;     (add-hook 'go-mode-hook #'eglot-ensure)))
+;;   (add-hook 'project-find-functions #'project-find-go-module)
+;;   (add-hook 'after-save-hook (apply-partially #'eglot-organize-imports 'go-mode))
+;;   (add-hook 'go-mode-hook #'eglot-ensure))
 
 (with-eval-after-load 'lsp-mode
-  (progn
-    ;; go install github.com/go-delve/delve/cmd/dlv@latest
-    (require 'dap-dlv-go)
-
-    (add-hook 'before-save-hook #'lsp-format-buffer)
-    (add-hook 'before-save-hook #'lsp-organize-imports)
-    (add-hook 'go-mode-hook 'lsp-deferred)))
+  ;; go install github.com/go-delve/delve/cmd/dlv@latest
+  (require 'dap-dlv-go)
+  (add-hook 'before-save-hook #'lsp-format-buffer)
+  (add-hook 'before-save-hook #'lsp-organize-imports)
+  (add-hook 'go-mode-hook 'lsp-deferred))
 #+end_src
 
 ** Rust
