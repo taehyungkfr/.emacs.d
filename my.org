@@ -369,6 +369,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
       org-babel-go-command "GO111MODULE=off go"
       org-agenda-window-setup 'current-window
       org-agenda-start-with-log-mode '(closed)
+      org-agenda-tags-column -120       ; auto bug fix
       org-todo-keywords '((sequence "TODO(t)" "INPROGRESS(i)" "PAUSED(p)" "|"
                                     "DONE(d)" "CANCELED(c)"))
       org-agenda-files '("~/org/inbox.org" "~/org/gtd.org" "~/org/tickler.org")
@@ -381,8 +382,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
                       ("@home" . ?h)
                       ("@office" . ?o))
       org-html-postamble nil
-      org-html-use-infojs t
-      org-html-head-include-default-style t
+      org-html-use-infojs nil
+      org-html-head-include-default-style nil
       org-html-head "<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
 
 (org-babel-do-load-languages
@@ -409,7 +410,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
 #+end_src
 
-*** [[https://github.com/bastibe/org-journal][org-journal]]
+** [[https://github.com/bastibe/org-journal][org-journal]]
 
 #+begin_src emacs-lisp
 (require 'org-journal)
