@@ -196,6 +196,12 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
     (apply 'my/join-path
            (expand-file-name (car dirs) root)
            (cdr dirs))))
+
+(defun my/read-file (path)
+  "파일 컨텐츠 읽기"
+  (with-temp-buffer
+    (insert-file-contents path)
+    (buffer-string)))
 #+end_src
 
 ** Better defaults
