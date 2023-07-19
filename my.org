@@ -410,6 +410,9 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
            ("t" . "src typescript :cmdline -t es6 \n")))
   (add-to-list 'org-structure-template-alist temp))
 
+(setq org-babel-default-header-args:sh `((:noweb . "yes")
+                                      (:results . "drawer")))
+
 (with-eval-after-load 'org
   (require 'org-tempo)
   (require 'ox-gfm)
