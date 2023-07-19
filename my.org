@@ -75,6 +75,7 @@
     lsp-treemacs                  ; LSP treemacs 통합
     lsp-java                      ; LSP Java
     dap-mode                      ; LSP Debug
+    flycheck                      ; 문법 오류 검사
 
     ;;;; Go
     go-mode                       ; Go 모드
@@ -743,6 +744,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+begin_src emacs-lisp
 (require 'lsp-mode)
 (require 'lsp-ui)
+(require 'flycheck)
 (with-eval-after-load 'lsp-mode
   (let ((lsp-keymap-prefix "C-c l"))
     (lsp-enable-which-key-integration))
@@ -757,7 +759,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
         lsp-headerline-breadcrumb-enable nil
         lsp-modeline-code-actions-enable nil
         lsp-completion-provider :none ;; use corfu
-        lsp-diagnostics-provider :flymake)
+        lsp-diagnostics-provider :flycheck)
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/file-watchers
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.vendor\\'")
