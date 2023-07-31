@@ -1,7 +1,6 @@
 (when (and (fboundp 'native-comp-available-p)
            (native-comp-available-p))
   (progn
-    (message "Native comp is available")
     (setq native-comp-async-report-warnings-errors nil
           native-comp-deferred-compilation-deny-list '("my.el" "pers.el")
           comp-deferred-compilation t

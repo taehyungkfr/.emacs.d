@@ -1,5 +1,5 @@
 #+TITLE: Emacs configuration file
-#+AUTHOR: Taehyung
+#+AUTHOR: Tae
 #+BABEL: :cache yes
 #+PROPERTY: header-args :tangle yes
 #+OPTIONS: toc:3 num:nil ^:nil \n:t
@@ -23,7 +23,6 @@
 
 (defvar my/pkg-list
   '(auto-compile                  ; Emacs Lisp 라이브러리 컴파일러
-    use-package                   ; 패키지 관리자
     which-key                     ; 사용가능한 키 바인딩 표시
     vterm                         ; 터미널 에뮬레이터
     diff-hl                       ; Git 커밋되지 않은 변경사항 강조
@@ -66,7 +65,6 @@
     ox-gfm                        ; github 스타일의 마크다운 내보내기
 
     ;;;; Eglot
-    ;; eglot
     ;; consult-eglot
 
     ;;; LSP
@@ -311,6 +309,18 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (minor-mode-blackout-mode 1)
 #+end_src
 
+** Undo
+
+#+begin_src emacs-lisp
+(defun undo-tree-mode-setup ()
+  (setq undo-tree-visualizer-diff t
+        undo-tree-visualizer-timestamps t
+        undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
+  (global-undo-tree-mode 1))
+
+(add-hook 'after-init-hook 'undo-tree-mode-setup)
+#+end_src
+
 ** Visual
 
 #+begin_src emacs-lisp
@@ -327,7 +337,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (defun my-exec-path-from-shell-initialize ()
-  (when (memq window-system '(mac ns x))
+  (when (memq window-system '(mac ns x pgtk))
     (setq exec-path-from-shell-variables '("PATH" "TMPDIR" "GOROOT" "GOPATH" "JAVA_HOME"))
     (exec-path-from-shell-initialize)))
 (add-hook 'after-init-hook 'my-exec-path-from-shell-initialize)
@@ -389,8 +399,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
                       ("@home" . ?h)
                       ("@office" . ?o))
       org-html-postamble nil
-      org-html-use-infojs nil
-      org-html-head-include-default-style nil
+      org-html-use-infojs 'when-configured
+      org-html-head-include-default-style t
       org-html-head "<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
 
 (org-babel-do-load-languages
@@ -420,7 +430,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
 #+end_src
 
-** [[https://github.com/bastibe/org-journal][org-journal]]
+** [[https://github.com/bastibe/org-journal][Journal]]
 
 #+begin_src emacs-lisp
 (require 'org-journal)
@@ -428,9 +438,9 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (setq org-journal-dir "~/org/journal/"
       org-journal-date-format "%A, %Y-%m-%d"
       org-journal-search-result-date-format "%A, %Y-%m-%d"
-      org-journal-file-format "%Y/%Y%m.org"
-      org-journal-file-type 'monthly
-      org-journal-file-header "#+title: %Y.%m Journal \n#+startup: folded"
+      org-journal-file-format "%Y/%m/%Y%m%d.org"
+      org-journal-file-type 'weekly
+      org-journal-file-header "#+title: %Y.%m Journal"
       org-journal-enable-agenda-integration t)
 #+end_src
 
@@ -630,7 +640,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Vterm
 
 #+begin_src emacs-lisp
-(when (memq window-system '(mac ns x))
+(when (memq window-system '(mac ns x pgtk))
   (require 'vterm)
   (setq vterm-always-compile-module t)
 
@@ -745,13 +755,12 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Lsp
 
 #+begin_src emacs-lisp
+(setq lsp-keymap-prefix "C-c l")
 (require 'lsp-mode)
 (require 'lsp-ui)
 (require 'flycheck)
-(with-eval-after-load 'lsp-mode
-  (let ((lsp-keymap-prefix "C-c l"))
-    (lsp-enable-which-key-integration))
 
+(with-eval-after-load 'lsp-mode
   (setq lsp-idle-delay 0.200
         lsp-log-io nil
         lsp-ui-doc-enable nil
@@ -764,10 +773,15 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
         lsp-completion-provider :none ;; use corfu
         lsp-diagnostics-provider :flycheck)
 
+  (lsp-enable-which-key-integration)
+
   ;; https://emacs-lsp.github.io/lsp-mode/page/file-watchers
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.vendor\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.artifacts\\'")
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\][^/\\\\]*\\.\\(json\\|html\\|yaml\\)$"))
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\][^/\\\\]*\\.\\(json\\|html\\|yaml\\)$")
+
+  (add-hook 'before-save-hook #'lsp-format-buffer)
+  (add-hook 'before-save-hook #'lsp-organize-imports))
 #+end_src
 
 ** Lisp
@@ -779,18 +793,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
                 lisp-interaction-mode
                 scheme-mode))
   (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
-#+end_src
-
-** Undo
-
-#+begin_src emacs-lisp
-(defun undo-tree-mode-setup ()
-  (setq undo-tree-visualizer-diff t
-        undo-tree-visualizer-timestamps t
-        undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
-  (global-undo-tree-mode 1))
-
-(add-hook 'after-init-hook 'undo-tree-mode-setup)
 #+end_src
 
 ** Go
@@ -819,7 +821,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ;;       (cons 'go-module root)))
 ;;   (cl-defmethod project-root ((project (head go-module)))
 ;;     (cdr project))
-
 ;;   (add-hook 'project-find-functions #'project-find-go-module)
 ;;   (add-hook 'after-save-hook (apply-partially #'eglot-organize-imports 'go-mode))
 ;;   (add-hook 'go-mode-hook #'eglot-ensure))
@@ -827,8 +828,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (with-eval-after-load 'lsp-mode
   ;; go install github.com/go-delve/delve/cmd/dlv@latest
   (require 'dap-dlv-go)
-  (add-hook 'before-save-hook #'lsp-format-buffer)
-  (add-hook 'before-save-hook #'lsp-organize-imports)
   (add-hook 'go-mode-hook 'lsp-deferred))
 #+end_src
 
@@ -1055,7 +1054,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (define-key my-key-map (kbd "C-<") 'er/contract-region)
 (define-key my-key-map (kbd "C-c T") 'google-translate-at-point)
 
-(when (memq window-system '(mac ns x))
+(when (memq window-system '(mac ns x pgtk))
   (dolist (n (number-sequence 1 9))
     (define-key my-key-map (kbd (concat "M-" (int-to-string n)))
       (lambda () (interactive) (switch-vterm n))))
