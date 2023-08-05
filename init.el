@@ -15,7 +15,7 @@
     (require 'org-macs)
     (unless (org-file-newer-than-p .el mtime)
       (require 'ob-tangle)
-      (message "Rewrite my config")
+      ;; (message "Rewrite my config")
       (org-babel-tangle-file .org .el "emacs-lisp"))
     (load-file .el))
 
@@ -24,7 +24,4 @@
     (load-file "pers.el"))
 
   ;; 기본 디렉토리 변경
-  (cd "~")
-
-  ;; 로딩 이후 가비지컬렉션
-  (garbage-collect))
+  (cd "~"))

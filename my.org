@@ -25,7 +25,6 @@
   '(auto-compile                  ; Emacs Lisp 라이브러리 컴파일러
     which-key                     ; 사용가능한 키 바인딩 표시
     vterm                         ; 터미널 에뮬레이터
-    diff-hl                       ; Git 커밋되지 않은 변경사항 강조
     magit                         ; Git 유틸
     page-break-lines              ; 페이지 나누기(^L) 표시 변경
     popup                         ; 툴팁
@@ -276,7 +275,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (column-number-mode 1)
 (delete-selection-mode 1)
 (dirtrack-mode 1)
-(global-diff-hl-mode 1)
 (global-so-long-mode 1)
 (global-display-line-numbers-mode 1)
 (recentf-mode 1)
@@ -414,14 +412,14 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
    (shell . t)
    (plantuml . t)))
 
+(setq org-babel-default-header-args:sh `((:noweb . "yes")
+                                      (:results . "drawer")))
+
 (dolist (temp
          '(("sh" . "src shell :noweb yes :results drawer \n")
            ("u" . "src plantuml :file ?.png :cmdline -charset UTF-8\n")
            ("t" . "src typescript :cmdline -t es6 \n")))
   (add-to-list 'org-structure-template-alist temp))
-
-(setq org-babel-default-header-args:sh `((:noweb . "yes")
-                                      (:results . "drawer")))
 
 (with-eval-after-load 'org
   (require 'org-tempo)
@@ -440,7 +438,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
       org-journal-search-result-date-format "%A, %Y-%m-%d"
       org-journal-file-format "%Y/%m/%Y%m%d.org"
       org-journal-file-type 'weekly
-      org-journal-file-header "#+title: %Y.%m Journal"
+      org-journal-file-header "#+TITLE: %Y.%m Journal\n#+OPTIONS: toc:nil ^:nil \n:t"
       org-journal-enable-agenda-integration t)
 #+end_src
 
@@ -642,7 +640,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+begin_src emacs-lisp
 (when (memq window-system '(mac ns x pgtk))
   (require 'vterm)
-  (setq vterm-always-compile-module t)
+  (setq vterm-always-compile-module t
+        vterm-timer-delay 0.01)
 
   (defadvice vterm (after kill-with-no-query nil activate)
     (set-process-query-on-exit-flag (get-buffer-process ad-return-value) nil))
