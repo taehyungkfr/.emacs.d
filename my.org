@@ -79,9 +79,6 @@
     ob-go                         ; Go org babel
     go-tag                        ; Go 태그 자동 생성
 
-    ;;;; Rust
-    rustic
-
     ;;;; Completion
     consult
     consult-projectile
@@ -381,6 +378,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
       org-edit-src-content-indentation 0
       org-imenu-depth 3
       org-log-done 'time
+      org-babel-default-header-args:sh `((:noweb . "yes") (:results . "drawer"))
       org-babel-go-command "GO111MODULE=off go"
       org-agenda-window-setup 'current-window
       org-agenda-start-with-log-mode '(closed)
@@ -401,20 +399,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
       org-html-head-include-default-style t
       org-html-head "<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((python . t)
-   (ditaa . t)
-   (java . t)
-   (go . t)
-   (js . t)
-   (C . t)
-   (shell . t)
-   (plantuml . t)))
-
-(setq org-babel-default-header-args:sh `((:noweb . "yes")
-                                      (:results . "drawer")))
-
 (dolist (temp
          '(("sh" . "src shell :noweb yes :results drawer \n")
            ("u" . "src plantuml :file ?.png :cmdline -charset UTF-8\n")
@@ -422,6 +406,38 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (add-to-list 'org-structure-template-alist temp))
 
 (with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)
+     (ditaa . t)
+     (java . t)
+     (go . t)
+     (js . t)
+     (C . t)
+     (shell . t)
+     (plantuml . t)))
+
+  (require 'org-crypt)
+  (org-crypt-use-before-save-magic)
+  (setq epa-file-select-keys nil
+        epg-pinentry-mode 'loopback
+        auth-sources '((:source "~/.authinfo.gpg"))
+        org-crypt-key nil
+        org-tags-exclude-from-inheritance (quote ("crypt")))
+
+  ;; 암호 항목에 대한 tangle 내보내기 문제 해결
+  (defun my/reveal-and-move-back ()
+    (org-reveal)
+    (goto-char my/old-point))
+  (defun my/org-reveal-after-save-on ()
+    (setq my/old-point (point))
+    (add-hook 'after-save-hook 'my/reveal-and-move-back))
+  (defun my/org-reveal-after-save-off ()
+    (remove-hook 'after-save-hook 'my/reveal-and-move-back))
+
+  (add-hook 'org-babel-pre-tangle-hook 'my/org-reveal-after-save-on)
+  (add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off)
+
   (require 'org-tempo)
   (require 'ox-gfm)
   (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n,")
@@ -442,67 +458,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
       org-journal-enable-agenda-integration t)
 #+end_src
 
-** Encrypt
-
-#+begin_src emacs-lisp
-;; (require 'epa-file)
-;; (epa-file-enable)
-(require 'org-crypt)
-(org-crypt-use-before-save-magic)
-(setq epa-file-select-keys nil
-      epg-pinentry-mode 'loopback
-      auth-sources '((:source "~/.authinfo.gpg"))
-      org-crypt-key nil
-      org-tags-exclude-from-inheritance (quote ("crypt")))
-
-;; 암호 항목에 대한 tangle 내보내기 문제 해결
-(defun my/reveal-and-move-back ()
-  (org-reveal)
-  (goto-char my/old-point))
-(defun my/org-reveal-after-save-on ()
-  (setq my/old-point (point))
-  (add-hook 'after-save-hook 'my/reveal-and-move-back))
-(defun my/org-reveal-after-save-off ()
-  (remove-hook 'after-save-hook 'my/reveal-and-move-back))
-
-(add-hook 'org-babel-pre-tangle-hook 'my/org-reveal-after-save-on)
-(add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off)
-#+end_src
-
 ** Completion
-*** COMMENT Ivy & Company
-
-#+begin_src emacs-lisp
-(require 'ivy)
-(setq ivy-wrap t
-      ivy-height 25
-      ivy-use-virtual-buffers t
-      ivy-count-format "(%d/%d) "
-      ivy-on-del-error-function 'ignore)
-(ivy-mode 1)
-(ivy-rich-mode 1)
-(counsel-projectile-mode 1)
-
-;; fuzzy설정으로, 파일생성 등을 원할하게 할 수 없는 부분 수정(disable)
-(setq read-file-name-function
-      (lambda (&rest args)
-        (let ((completing-read-function #'completing-read-default))
-          (apply #'read-file-name-default args))))
-
-(define-key counsel-mode-map [remap find-file] nil)
-
-(require 'company)
-(global-company-mode 1)
-(setq company-idle-delay 0
-      company-echo-delay 0
-      company-dabbrev-downcase nil
-      company-minimum-prefix-length 2
-      company-selection-wrap-around t
-      company-transformers '(company-sort-by-occurrence
-                             company-sort-by-backend-importance))
-#+end_src
-
-*** Consult & Corfu
 
 #+begin_src emacs-lisp
 (require 'consult)
@@ -777,10 +733,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   ;; https://emacs-lsp.github.io/lsp-mode/page/file-watchers
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.vendor\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.artifacts\\'")
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\][^/\\\\]*\\.\\(json\\|html\\|yaml\\)$")
-
-  (add-hook 'before-save-hook #'lsp-format-buffer)
-  (add-hook 'before-save-hook #'lsp-organize-imports))
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\][^/\\\\]*\\.\\(json\\|html\\|yaml\\)$"))
 #+end_src
 
 ** Lisp
@@ -804,7 +757,9 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
   (hs-minor-mode t)
   (local-set-key (kbd "C-c C-c") 'compile)
-  (add-hook 'before-save-hook #'gofmt-before-save))
+  (add-hook 'before-save-hook #'gofmt-before-save)
+  (add-hook 'before-save-hook #'lsp-format-buffer)
+  (add-hook 'before-save-hook #'lsp-organize-imports))
 
 (add-hook 'go-mode-hook 'go-mode-setup)
 
@@ -828,27 +783,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   ;; go install github.com/go-delve/delve/cmd/dlv@latest
   (require 'dap-dlv-go)
   (add-hook 'go-mode-hook 'lsp-deferred))
-#+end_src
-
-** Rust
-
-#+begin_src emacs-lisp
-(require 'rustic)
-(setq rust-indent-offset 2)
-#+end_src
-
-** Json
-
-#+begin_src emacs-lisp
-(add-hook 'json-mode-hook 'highlight-indentation-mode)
-(with-eval-after-load 'json-mode
-  (setq js-indent-level tab-width))
-#+end_src
-
-** Yaml
-
-#+begin_src emacs-lisp
-(add-hook 'yaml-mode-hook 'highlight-indentation-mode)
 #+end_src
 
 ** Java
@@ -877,24 +811,28 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (add-to-list 'lsp-java-vmargs (concat "-javaagent:" lombok-jar-path))
 #+end_src
 
-** Plantuml
-
+** Syntax
 #+begin_src emacs-lisp
+;; json
+(add-hook 'json-mode-hook 'highlight-indentation-mode)
+(with-eval-after-load 'json-mode
+  (setq js-indent-level tab-width))
+
+;; yaml
+(add-hook 'yaml-mode-hook 'highlight-indentation-mode)
+
+;; plantuml
 (require 'plantuml-mode)
 (let ((jar-file "~/.emacs.d/bin/plantuml.jar"))
   (setq plantuml-default-exec-mode 'jar
         plantuml-jar-path jar-file
         org-plantuml-jar-path jar-file))
-#+end_src
 
-** Kubernetes
-
-#+begin_src emacs-lisp
+;; k8s
 (with-eval-after-load 'k8s-mode
   (setq k8s-indent-offset nil
         k8s-site-docs-url "https://kubernetes.io/docs/reference/generated/kubernetes-api/"))
 #+end_src
-
 ** Mail
 
 #+begin_src emacs-lisp
@@ -992,27 +930,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+end_src
 
 ** Bindings for Completion
-*** COMMENT [[https://github.com/abo-abo/swiper][Counsel]] & [[http://company-mode.github.io][Company]]
-
-#+begin_src emacs-lisp
-(define-key my-key-map (kbd "C-s")     'swiper-isearch)
-(define-key my-key-map (kbd "C-r")     'swiper-isearch-backward)
-(define-key my-key-map (kbd "M-x")     'counsel-M-x)
-(define-key my-key-map (kbd "C-x C-f") 'counsel-find-file)
-(define-key my-key-map (kbd "M-y")     'counsel-yank-pop)
-(define-key my-key-map (kbd "C-x b")   'ivy-switch-buffer)
-(define-key my-key-map (kbd "C-c b")   'counsel-bookmark)
-(define-key my-key-map (kbd "C-c i")   'counsel-imenu)
-(define-key my-key-map (kbd "C-c r")   'counsel-recentf)
-(define-key ivy-mode-map (kbd "C-l") 'ivy-backward-kill-word)
-
-(define-key company-active-map (kbd "C-d") 'company-show-doc-buffer)
-(define-key company-active-map (kbd "C-n") 'company-select-next)
-(define-key company-active-map (kbd "C-p") 'company-select-previous)
-(define-key company-active-map (kbd "<tab>") 'company-complete)
-#+end_src
-
-*** Consult & Corfu
 
 #+begin_src emacs-lisp
 (define-key my-key-map (kbd "C-s") 'consult-line)
