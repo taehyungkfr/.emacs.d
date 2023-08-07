@@ -367,83 +367,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (evil-ex-define-cmd "quit" 'evil-quit)
 #+end_src
 
-** Org
-
-#+begin_src emacs-lisp
-(setq org-startup-folded t
-      org-adapt-indentation nil
-      org-src-fontify-natively t
-      org-src-tab-acts-natively t
-      org-confirm-babel-evaluate nil
-      org-edit-src-content-indentation 0
-      org-imenu-depth 3
-      org-log-done 'time
-      org-babel-default-header-args:sh `((:noweb . "yes") (:results . "drawer"))
-      org-babel-go-command "GO111MODULE=off go"
-      org-agenda-window-setup 'current-window
-      org-agenda-start-with-log-mode '(closed)
-      org-agenda-tags-column -120       ; auto bug fix
-      org-todo-keywords '((sequence "TODO(t)" "INPROGRESS(i)" "PAUSED(p)" "|"
-                                    "DONE(d)" "CANCELED(c)"))
-      org-agenda-files '("~/org/inbox.org" "~/org/gtd.org" "~/org/tickler.org")
-      org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
-                           ("~/org/someday.org" :level . 1)
-                           ("~/org/tickler.org" :maxlevel . 2))
-      org-capture-templates '(("t" "TODO [inbox]" entry (file "~/org/inbox.org") "* TODO %i%?")
-                              ("T" "Tickler" entry (file "~/org/tickler.org") "* %i%? \n %U"))
-      org-tag-alist '(("crypt" . ?c)
-                      ("@home" . ?h)
-                      ("@office" . ?o))
-      org-html-postamble nil
-      org-html-use-infojs 'when-configured
-      org-html-head-include-default-style t
-      org-html-head "<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
-
-(dolist (temp
-         '(("sh" . "src shell :noweb yes :results drawer \n")
-           ("u" . "src plantuml :file ?.png :cmdline -charset UTF-8\n")
-           ("t" . "src typescript :cmdline -t es6 \n")))
-  (add-to-list 'org-structure-template-alist temp))
-
-(with-eval-after-load 'org
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((python . t)
-     (ditaa . t)
-     (java . t)
-     (go . t)
-     (js . t)
-     (C . t)
-     (shell . t)
-     (plantuml . t)))
-
-  (require 'org-crypt)
-  (org-crypt-use-before-save-magic)
-  (setq epa-file-select-keys nil
-        epg-pinentry-mode 'loopback
-        auth-sources '((:source "~/.authinfo.gpg"))
-        org-crypt-key nil
-        org-tags-exclude-from-inheritance (quote ("crypt")))
-
-  ;; 암호 항목에 대한 tangle 내보내기 문제 해결
-  (defun my/reveal-and-move-back ()
-    (org-reveal)
-    (goto-char my/old-point))
-  (defun my/org-reveal-after-save-on ()
-    (setq my/old-point (point))
-    (add-hook 'after-save-hook 'my/reveal-and-move-back))
-  (defun my/org-reveal-after-save-off ()
-    (remove-hook 'after-save-hook 'my/reveal-and-move-back))
-
-  (add-hook 'org-babel-pre-tangle-hook 'my/org-reveal-after-save-on)
-  (add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off)
-
-  (require 'org-tempo)
-  (require 'ox-gfm)
-  (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n,")
-  (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
-#+end_src
-
 ** [[https://github.com/bastibe/org-journal][Journal]]
 
 #+begin_src emacs-lisp
@@ -452,6 +375,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (setq org-journal-dir "~/org/journal/"
       org-journal-date-format "%A, %Y-%m-%d"
       org-journal-search-result-date-format "%A, %Y-%m-%d"
+      org-journal-time-format "<%Y-%m-%d %a %H:%M>"
       org-journal-file-format "%Y/%m/%Y%m%d.org"
       org-journal-file-type 'weekly
       org-journal-file-header "#+TITLE: %Y.%m Journal\n#+OPTIONS: toc:nil ^:nil \n:t"
@@ -833,6 +757,83 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (setq k8s-indent-offset nil
         k8s-site-docs-url "https://kubernetes.io/docs/reference/generated/kubernetes-api/"))
 #+end_src
+** Org
+
+#+begin_src emacs-lisp
+(setq org-startup-folded t
+      org-adapt-indentation nil
+      org-src-fontify-natively t
+      org-src-tab-acts-natively t
+      org-confirm-babel-evaluate nil
+      org-edit-src-content-indentation 0
+      org-imenu-depth 3
+      org-log-done 'time
+      org-babel-default-header-args:sh `((:noweb . "yes") (:results . "output"))
+      org-babel-go-command "GO111MODULE=off go"
+      org-agenda-window-setup 'current-window
+      org-agenda-start-with-log-mode '(closed)
+      org-agenda-tags-column 0       ; auto bug fix
+      org-todo-keywords '((sequence "TODO(t)" "INPROGRESS(i)" "PAUSED(p)" "|"
+                                    "DONE(d)" "CANCELED(c)"))
+      org-agenda-files '("~/org/inbox.org" "~/org/gtd.org" "~/org/tickler.org")
+      org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
+                           ("~/org/someday.org" :level . 1)
+                           ("~/org/tickler.org" :maxlevel . 2))
+      org-capture-templates '(("t" "TODO [inbox]" entry (file "~/org/inbox.org") "* TODO %i%?")
+                              ("T" "Tickler" entry (file "~/org/tickler.org") "* %i%? \n %U"))
+      org-tag-alist '(("crypt" . ?c)
+                      ("@home" . ?h)
+                      ("@office" . ?o))
+      org-html-postamble nil
+      org-html-use-infojs 'when-configured
+      org-html-head-include-default-style t
+      org-html-head "<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
+
+(dolist (list
+         '(("sh" . "src sh\n")
+           ("u" . "src plantuml :file ?.png :cmdline -charset UTF-8\n")
+           ("t" . "src typescript :cmdline -t es6 \n")))
+  (add-to-list 'org-structure-template-alist list))
+
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)
+     (ditaa . t)
+     (java . t)
+     (go . t)
+     (js . t)
+     (C . t)
+     (shell . t)
+     (plantuml . t)))
+
+  (require 'org-crypt)
+  (org-crypt-use-before-save-magic)
+  (setq epa-file-select-keys nil
+        epg-pinentry-mode 'loopback
+        auth-sources '((:source "~/.authinfo.gpg"))
+        org-crypt-key nil
+        org-tags-exclude-from-inheritance (quote ("crypt")))
+
+  ;; 암호 항목에 대한 tangle 내보내기 문제 해결
+  (defun my/reveal-and-move-back ()
+    (org-reveal)
+    (goto-char my/old-point))
+  (defun my/org-reveal-after-save-on ()
+    (setq my/old-point (point))
+    (add-hook 'after-save-hook 'my/reveal-and-move-back))
+  (defun my/org-reveal-after-save-off ()
+    (remove-hook 'after-save-hook 'my/reveal-and-move-back))
+
+  (add-hook 'org-babel-pre-tangle-hook 'my/org-reveal-after-save-on)
+  (add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off)
+
+  (require 'org-tempo)
+  (require 'ox-gfm)
+  (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n,")
+  (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
+#+end_src
+
 ** Mail
 
 #+begin_src emacs-lisp
