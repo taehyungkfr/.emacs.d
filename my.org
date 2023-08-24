@@ -318,7 +318,10 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   :init
   (add-hook 'org-mode-hook 'evil-org-mode)
   :config
-  (evil-org-agenda-set-keys)
+  (use-package evil-org-agenda
+    :straight (:type built-in)
+    :config
+    (evil-org-agenda-set-keys))
   (evil-org-set-key-theme '(navigation insert textobjects additional calendar)))
 #+end_src
 
@@ -592,8 +595,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
   ;; From: https://github.com/skeeto/elfeed/issues/11
   (defun my/elfeed-db-purge ()
-    (interactive)
     "trash 태그를 가진 항목의 DB삭제"
+    (interactive)
     (with-elfeed-db-visit (entry _)
       (let ((ref (elfeed-entry-content entry)))
         (when (and (elfeed-ref-p ref) (memq 'trash (elfeed-entry-tags entry)))
@@ -805,24 +808,31 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
      (plantuml . t)))
 
   (dolist (temp
-           '(("sh" . "src shell :noweb yes :results drawer \n")
+           '(("sh" . "src sh \n")
              ("u" . "src plantuml :file ?.png :cmdline -charset UTF-8\n")
              ("t" . "src typescript :cmdline -t es6 \n")))
     (add-to-list 'org-structure-template-alist temp))
 
   :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys)
+  (require 'org-tempo)
+  (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n,")
+  (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
 
-  (require 'epa-file)
-  (epa-file-enable)
-  (require 'org-crypt)
+(use-package epa-file
+  :after (org)
+  :straight (:type built-in)
+  :autoload epa-file-enable)
+
+(use-package org-crypt
+  :after (org)
+  :straight (:type built-in)
+  :autoload org-crypt-use-before-save-magic
+  :init
   (setq epa-file-select-keys nil
         epg-pinentry-mode 'loopback
         auth-sources '((:source "~/.authinfo.gpg"))
         org-crypt-key nil
         org-tags-exclude-from-inheritance (quote ("crypt")))
-  (org-crypt-use-before-save-magic)
   ;; 암호 항목에 대한 tangle 내보내기 문제 해결
   (defun my/reveal-and-move-back ()
     (org-reveal)
@@ -834,11 +844,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
     (remove-hook 'after-save-hook 'my/reveal-and-move-back))
 
   (add-hook 'org-babel-pre-tangle-hook 'my/org-reveal-after-save-on)
-  (add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off)
-
-  (require 'org-tempo)
-  (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n,")
-  (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
+  (add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off))
 
 (use-package ox-gfm
   :after (org))
