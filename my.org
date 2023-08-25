@@ -826,14 +826,14 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (use-package org-crypt
   :after (org)
   :straight (:type built-in)
-  :autoload org-crypt-use-before-save-magic
-  :init
+  :config
   (setq epa-file-select-keys nil
         epg-pinentry-mode 'loopback
         auth-sources '((:source "~/.authinfo.gpg"))
         org-crypt-key nil
         org-tags-exclude-from-inheritance (quote ("crypt")))
   ;; 암호 항목에 대한 tangle 내보내기 문제 해결
+  (org-crypt-use-before-save-magic)
   (defun my/reveal-and-move-back ()
     (org-reveal)
     (goto-char my/old-point))
@@ -842,7 +842,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
     (add-hook 'after-save-hook 'my/reveal-and-move-back))
   (defun my/org-reveal-after-save-off ()
     (remove-hook 'after-save-hook 'my/reveal-and-move-back))
-
   (add-hook 'org-babel-pre-tangle-hook 'my/org-reveal-after-save-on)
   (add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off))
 
