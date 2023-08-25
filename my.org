@@ -201,7 +201,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
             (throw 'done t)))
         mode-line-modes))
 
-(minor-mode-blackout-mode 1)
+;;(minor-mode-blackout-mode 1)
 #+end_src
 
 ** DB
@@ -924,7 +924,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   "A mode that activates my-key."
   :init-value t
   :keymap my-key-map
-  :lighter " my-key")
+  :lighter " My")
 
 (my-key-mode t)
 #+end_src
