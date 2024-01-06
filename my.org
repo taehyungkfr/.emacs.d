@@ -175,7 +175,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (column-number-mode 1)
 (delete-selection-mode 1)
 (dirtrack-mode 1)
-(global-so-long-mode 1)
 (global-display-line-numbers-mode 1)
 (recentf-mode 1)
 (show-paren-mode 1)
@@ -228,7 +227,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (which-key-mode 1))
 ;; Git 유틸
 (use-package magit
-  :init
+  :config
   ;; gpg-sign 추가하도록 구성
   (setq transient-default-level 5))
 ;; 페이지 나누기(^L) 표시 변경
@@ -260,13 +259,11 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package undo-tree
-  :init
-  (defun undo-tree-mode-setup ()
-    (setq undo-tree-visualizer-diff t
-          undo-tree-visualizer-timestamps t
-          undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
-    (global-undo-tree-mode 1))
-  (add-hook 'after-init-hook 'undo-tree-mode-setup))
+  :config
+  (setq undo-tree-visualizer-diff t
+        undo-tree-visualizer-timestamps t
+        undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
+  (global-undo-tree-mode 1))
 #+end_src
 
 ** Visual
@@ -284,15 +281,13 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+begin_src emacs-lisp
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns x pgtk))
-  :init
-  (defun my-exec-path-from-shell-initialize ()
-    (setq exec-path-from-shell-variables '( "PATH"
-                                            "TMPDIR"
-                                            "GOROOT"
-                                            "GOPATH"
-                                            "JAVA_HOME"))
-    (exec-path-from-shell-initialize))
-  (add-hook 'after-init-hook 'my-exec-path-from-shell-initialize))
+  :config
+  (setq exec-path-from-shell-variables '( "PATH"
+                                          "TMPDIR"
+                                          "GOROOT"
+                                          "GOPATH"
+                                          "JAVA_HOME"))
+  (add-hook 'after-init-hook (lambda () (exec-path-from-shell-initialize))))
 #+end_src
 
 ** Evil
@@ -315,9 +310,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 (use-package evil-org
   :after (evil org-agenda)
-  :init
-  (add-hook 'org-mode-hook 'evil-org-mode)
   :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
   (use-package evil-org-agenda
     :straight (:type built-in)
     :config
@@ -329,16 +323,15 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package org-journal
-  :init
+  :config
   (setq org-journal-dir "~/org/journal/"
         org-journal-date-format "%A, %Y-%m-%d"
         org-journal-search-result-date-format "%A, %Y-%m-%d"
         org-journal-time-format "<%Y-%m-%d %a %H:%M>"
         org-journal-file-format "%Y/%m/%Y%m%d.org"
         org-journal-file-type 'weekly
-        org-journal-file-header "#+TITLE: %Y.%m Journal\n#+OPTIONS: toc:nil ^:nil \n:t"
+        org-journal-file-header "#+TITLE: %Y.%m Journal\n#+OPTIONS: toc:nil ^:nil \\n:t"
         org-journal-enable-agenda-integration t)
-  :config
   ;; 캘린더 설정
   (custom-set-faces
    '(calendar-today ((t (:background "#CC9393" :underline t))))
@@ -349,7 +342,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package projectile
-  :init
+  :config
   (setq projectile-globally-ignored-directories
         '(".git"
           ".vscode"
@@ -364,7 +357,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package consult
-  :init
+  :config
   (setq register-preview-delay 0.5
         register-preview-function #'consult-register-format)
   ;; (setq xref-show-xrefs-function #'consult-xref
@@ -390,21 +383,20 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ;;           embark-minimal-indicator)))
 
 (use-package orderless
-  :init
+  :config
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package vertico
-  :init
+  :config
   (setq vertico-count-format '("%-5s " . "%2$s")
         vertico-resize nil)
-  :config
   (vertico-mode 1))
 
 (use-package consult-projectile
   :after (consult projectile)
-  :init
+  :config
   (defcustom consult-projectile-key-bindings
     '((projectile-find-file        . consult-projectile-find-file)
       (projectile-find-dir         . consult-projectile-find-dir)
@@ -439,17 +431,15 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
             (define-key projectile-mode-map `[remap ,(car binding)] nil)
           (define-key projectile-command-map (car binding) nil)))
       (projectile-mode -1))))
-  :config
   (consult-projectile-mode 1))
 
 
 (use-package corfu
-  :init
+  :config
   (setq corfu-cycle t
         corfu-auto t
         corfu-count 15
         corfu-auto-delay 0)
-  :config
   (global-corfu-mode 1))
 
 (use-package corfu-terminal
@@ -463,23 +453,21 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package google-translate
-  :init
+  :config
   (defun google-translate--search-tkk ()
     "https://github.com/atykhonov/google-translate/issues/137"
     (list 430675 2721866130))
 
   (setq google-translate-default-source-language "en"
         google-translate-default-target-language "ko"
-        google-translate-output-destination nil)
-  :config
-  (require 'google-translate-default-ui))
+        google-translate-output-destination nil))
 #+end_src
 
 ** Treemacs
 
 #+begin_src emacs-lisp
 (use-package treemacs
-  :init
+  :config
   ;; https://github.com/Alexander-Miller/treemacs#configuration
   (setq treemacs-read-string-input 'from-minibuffer ; 이맥스 미니버퍼
         treemacs-litter-directories '("/vendor" "/node_modules")
@@ -492,8 +480,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package olivetti
-  :init
-  (setq-default olivetti-body-width 82)
+  :config
+  (setq-default olivetti-body-width 122)
   (add-hook 'olivetti-mode-on-hook (lambda () (display-line-numbers-mode 0)))
   (add-hook 'olivetti-mode-off-hook (lambda () (display-line-numbers-mode 1))))
 #+end_src
@@ -502,13 +490,11 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package ibuffer
-  :init
+  :config
   (defalias 'list-buffers 'ibuffer)
-  (defun ibuffer-mode-setup ()
-    (setq ibuffer-expert t
-          ibuffer-default-sorting-mode 'major-mode)
-    (ibuffer-auto-mode 1))
-  (add-hook 'ibuffer-mode-hook 'ibuffer-mode-setup))
+  (setq ibuffer-expert t
+        ibuffer-default-sorting-mode 'major-mode)
+  (add-hook 'ibuffer-mode-hook (lambda () (ibuffer-auto-mode 1))))
 #+end_src
 
 ** Vterm
@@ -516,41 +502,20 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+begin_src emacs-lisp
 (use-package vterm
   :if (not (eq system-type 'windows-nt))
-  :init
+  :config
   (setq vterm-always-compile-module t
         vterm-timer-delay 0.01)
 
   (defadvice vterm (after kill-with-no-query nil activate)
     (set-process-query-on-exit-flag (get-buffer-process ad-return-value) nil))
 
-  (let ((last-vterm ""))
-    (defun toggle-vterm ()
-      (interactive)
-      (cond ((string-match-p "^\\vterm<[1-9][0-9]*>$" (buffer-name))
-             (goto-non-vterm-buffer))
-            ((get-buffer last-vterm) (switch-to-buffer last-vterm))
-            (t (vterm (setq last-vterm "vterm<1>")))))
-
-    (defun switch-vterm (n)
-      (let ((buffer-name (format "vterm<%d>" n)))
-        (setq last-vterm buffer-name)
-        (cond ((get-buffer buffer-name)
-               (switch-to-buffer buffer-name))
-              (t (vterm buffer-name)
-                 (rename-buffer buffer-name)))))
-
-    (defun goto-non-vterm-buffer ()
-      (let* ((r "^\\vterm<[1-9][0-9]*>$")
-             (vterm-buffer-p (lambda (b) (string-match-p r (buffer-name b))))
-             (non-vterms (cl-remove-if vterm-buffer-p (buffer-list))))
-        (when non-vterms
-          (switch-to-buffer (car non-vterms))))))
-
-  (defun clear-comint ()
-    "Runs `comint-truncate-buffer' with the `comint-buffer-maximum-size' set to zero."
-    (interactive)
-    (let ((comint-buffer-maximum-size 0))
-      (comint-truncate-buffer)))
+  (defun my/switch-vterm (n)
+    "vterm 버퍼 변경"
+    (let ((buffer-name (format "vterm<%d>" n)))
+      (cond ((get-buffer buffer-name)
+             (switch-to-buffer buffer-name))
+            (t (vterm buffer-name)
+               (rename-buffer buffer-name)))))
 
   (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode 0))))
 #+end_src
@@ -559,12 +524,11 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package elfeed
-  :init
+  :config
   (setq elfeed-search-filter "@6-month-ago +unread"
         elfeed-show-entry-switch 'switch-to-buffer
         elfeed-search-title-max-width 100)
 
-  :config
   (require 'elfeed-link)
 
   ;; c.f. https://meliache.de/posts/2021/08/emacs-elfeed-browse-specifically-tagged-feeds-in-eww-automatically/
@@ -604,9 +568,8 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 (use-package elfeed-org
   :after (elfeed org)
-  :init
-  (setq rmh-elfeed-org-files (list "~/.emacs.d/elfeed.org"))
   :config
+  (setq rmh-elfeed-org-files (list "~/.emacs.d/elfeed.org"))
   (elfeed-org))
 
 (use-package elfeed-summary
@@ -616,41 +579,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Eglot
 
 #+begin_src emacs-lisp
-(use-package eglot
-  :init
-
-  ;; eglot-organize-imports is hopefully a temporary stopgap until
-  ;; https://github.com/joaotavora/eglot/issues/574 is addressed.
-  (defun eglot-organize-imports (mode)
-    "Offer to execute the source.organizeImports code action."
-    (interactive)
-    (when (eq major-mode mode)
-      (unless (eglot--server-capable :codeActionProvider)
-        (eglot--error "Server can't execute code actions!"))
-      (let* ((server (eglot--current-server-or-lose))
-             (actions (jsonrpc-request
-                       server
-                       :textDocument/codeAction
-                       (list :textDocument (eglot--TextDocumentIdentifier))))
-             (action (cl-find-if
-                      (jsonrpc-lambda (&key kind &allow-other-keys)
-                        (string-equal kind "source.organizeImports"))
-                      actions)))
-        (when action
-          (eglot--dcase action
-            (((Command) command arguments)
-             (eglot-execute-command server (intern command) arguments))
-            (((CodeAction) edit command)
-             (when edit (eglot--apply-workspace-edit edit))
-             (when command
-               (eglot--dbind ((Command) command arguments) command
-                 (eglot-execute-command server (intern command) arguments)))))))))
-
-  (setq-default eglot-workspace-configuration
-                '((:gopls .
-                          ((staticcheck . t)
-                           (matcher . "CaseSensitive"))))))
-
+(use-package eglot)
 (use-package consult-eglot
   :after (eglot consult))
 #+end_src
@@ -671,38 +600,43 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+begin_src emacs-lisp
 (use-package go-mode
   :after (eglot)
-  :init
-  (defun go-mode-setup()
+  :config
+  (defun my/go-mode-setup()
     (setq tab-width 2
           compile-command "go test -v .")
-
-    (hs-minor-mode t)
 
     ;; (add-hook 'before-save-hook #'lsp-format-buffer)
     ;; (add-hook 'before-save-hook #'lsp-organize-imports)
     ;; (add-hook 'before-save-hook 'gofmt-before-save)
+    ;; (add-hook 'go-mode-hook 'lsp-deferred)
 
     (local-set-key (kbd "C-c C-c") 'compile))
-  ;; (add-hook 'go-mode-hook 'lsp-deferred)
-  (add-hook 'go-mode-hook 'go-mode-setup))
+  (add-hook 'go-mode-hook 'hs-minor-mode)
+  (add-hook 'go-mode-hook 'my/go-mode-setup))
 
 (use-package go-tag)
 (use-package ob-go)
 
+;; cf. https://github.com/golang/tools/blob/master/gopls/doc/emacs.md
 (with-eval-after-load 'eglot
   (require 'project)
-  (defun project-find-go-module (dir)
+  (setq-default eglot-workspace-configuration
+                '((:gopls .
+                          ((staticcheck . t)
+                           (matcher . "CaseSensitive")))))
+  (defun my/project-find-go-module (dir)
     (when-let ((root (locate-dominating-file dir "go.mod")))
       (cons 'go-module root)))
   (cl-defmethod project-root ((project (head go-module)))
     (cdr project))
-  (add-hook 'project-find-functions 'project-find-go-module)
+  (add-hook 'project-find-functions 'my/project-find-go-module)
 
-  (add-hook 'before-save-hook (apply-partially #'eglot-organize-imports 'go-mode))
-
-  (defun eglot-format-buffer-on-save ()
-    (add-hook 'before-save-hook 'eglot-format-buffer -10 t))
-  (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
+  (defun my/eglot-go-before-save()
+    (interactive)
+    (when (eq major-mode 'go-mode)
+      (eglot-format-buffer)
+      (eglot-code-actions nil nil "source.organizeImports" t)))
+  (add-hook 'before-save-hook 'my/eglot-go-before-save)
   (add-hook 'go-mode-hook 'eglot-ensure))
 #+end_src
 
@@ -710,10 +644,9 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package eglot-java
-  :init
+  :config
   ;; (setq lombok-jar-path (expand-file-name "bin/lombok-1.18.jar" user-emacs-directory))
   ;; (add-to-list 'eglot-java-eclipse-jdt-args (concat "-javaagent:" lombok-jar-path))
-  :config
   (add-hook 'java-mode-hook 'eglot-java-mode))
 #+end_src
 
@@ -738,19 +671,19 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (add-hook 'yaml-mode-hook 'highlight-indentation-mode))
 
 (use-package plantuml-mode
-  :init
+  :config
   (let ((jar-file "~/.emacs.d/bin/plantuml.jar"))
     (setq plantuml-default-exec-mode 'jar
           plantuml-jar-path jar-file
           org-plantuml-jar-path jar-file)))
 
 (use-package k8s-mode
-  :init
+  :config
   (setq k8s-indent-offset nil
         k8s-site-docs-url "https://kubernetes.io/docs/reference/generated/kubernetes-api/"))
 
 (use-package markdown-mode
-  :init
+  :config
   (setq markdown-command "multimarkdown"))
 
 (use-package adoc-mode)
@@ -764,7 +697,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package org
-  :init
+  :config
   (setq org-startup-folded t
         org-adapt-indentation nil
         org-src-fontify-natively t
@@ -777,7 +710,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
         org-babel-default-header-args:sh `((:noweb . "yes") (:results . "output"))
         org-agenda-window-setup 'current-window
         org-agenda-start-with-log-mode '(closed)
-        org-agenda-tags-column -120       ; auto bug fix
+        org-agenda-tags-column 0       ; auto bug fix
         org-todo-keywords '((sequence "TODO(t)" "INPROGRESS(i)" "PAUSED(p)" "|"
                                       "REVIEW(r)" "DONE(d)" "CANCELED(c)"))
         org-agenda-files '("~/org/inbox.org"
@@ -794,7 +727,10 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
         org-html-postamble nil
         org-html-use-infojs 'when-configured
         org-html-head-include-default-style t
-        org-html-head "<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
+        org-html-doctype "html5"
+        org-html-head "
+<link rel=\"stylesheet\" href=\"https://orgmode.org/worg/style/worg-classic.css\" type=\"text/css\" />
+<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
 
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -812,8 +748,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
              ("u" . "src plantuml :file ?.png :cmdline -charset UTF-8\n")
              ("t" . "src typescript :cmdline -t es6 \n")))
     (add-to-list 'org-structure-template-alist temp))
-
-  :config
   (require 'org-tempo)
   (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n,")
   (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
@@ -858,6 +792,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 #+begin_src emacs-lisp
 (use-package mu4e
+  :if (not (eq system-type 'windows-nt))
   ;; :straight (:type built-in)
   :straight ( :host github
               :repo "djcb/mu"
@@ -865,7 +800,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
               :files ("build/mu4e/*.el")
               :pre-build (("./autogen.sh") ("make")))
   ;; :custom (mu4e-mu-binary "~/.emacs.d/straight/repos/mu/build/mu/mu")
-  :init
+  :config
   (setq read-mail-command 'mu4e
         mail-user-agent 'mu4e-user-agent
         mu4e-get-mail-command "mbsync -a"
@@ -890,7 +825,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
                               (:subject    . nil))))
 
 (use-package smtpmail
-  :init
+  :config
   (setq message-citation-line-format "%N @ %Y-%m-%dT%H:%M :\n"
         message-citation-line-function 'message-insert-formatted-citation-line
         message-send-mail-function 'smtpmail-send-it
@@ -904,7 +839,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 
 ;; Org export HTML 메일 발송
 (use-package org-mime
-  :init
+  :config
   (add-hook 'org-mime-html-hook
             (lambda ()
               (org-mime-change-element-style
@@ -917,40 +852,40 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 [[https://stackoverflow.com/questions/683425/globally-override-key-binding-in-emacs][설정 파일 끝에 유지]]
 
 #+begin_src emacs-lisp
-(defvar my-key-map (make-keymap)
-  "A keymap for custom bindings.")
+(defvar my/key-map (make-keymap)
+  "추가적인 keymap 설정")
 
-(define-minor-mode my-key-mode
-  "A mode that activates my-key."
+(define-minor-mode my/key-mode
+  "전역적인 커스텀 단축키 설정 모드"
   :init-value t
-  :keymap my-key-map
+  :keymap my/key-map
   :lighter " My")
 
-(my-key-mode t)
+(my/key-mode t)
 #+end_src
 
 ** Bindings for Evaluate
 
 #+begin_src emacs-lisp
-(define-key emacs-lisp-mode-map (kbd "C-c C-c") 'eval-defun)
-(define-key lisp-interaction-mode-map (kbd "C-c C-c") 'eval-defun)
+(keymap-set emacs-lisp-mode-map "C-c C-c" 'eval-defun)
+(keymap-set lisp-interaction-mode-map "C-c C-c" 'eval-defun)
 #+end_src
 
 ** Bindings for [[https://github.com/bbatsov/projectile][Projectile]]
 
 #+begin_src emacs-lisp
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+(keymap-set projectile-mode-map "C-c p" 'projectile-command-map)
 #+end_src
 
 ** Bindings for Eglot
 
 #+begin_src emacs-lisp
-(define-key eglot-mode-map (kbd "C-c l g d") 'xref-find-definitions)
-(define-key eglot-mode-map (kbd "C-c l g i") 'eglot-find-implementation)
-(define-key eglot-mode-map (kbd "C-c l g r") 'xref-find-references)
-(define-key eglot-mode-map (kbd "C-c l r") 'eglot-rename)
-(define-key eglot-mode-map (kbd "C-c l o") 'eglot-code-action-organize-imports)
-(define-key eglot-mode-map (kbd "C-c l h") 'eldoc)
+(keymap-set eglot-mode-map "C-c l g d" 'xref-find-definitions)
+(keymap-set eglot-mode-map "C-c l g i" 'eglot-find-implementation)
+(keymap-set eglot-mode-map "C-c l g r" 'xref-find-references)
+(keymap-set eglot-mode-map "C-c l r" 'eglot-rename)
+(keymap-set eglot-mode-map "C-c l o" 'eglot-code-action-organize-imports)
+(keymap-set eglot-mode-map "C-c l h" 'eldoc)
 
 (evil-collection-define-key 'normal 'eglot-mode-map "gr" 'xref-find-references)
 #+end_src
@@ -958,52 +893,53 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Bindings for Completion
 
 #+begin_src emacs-lisp
-(define-key my-key-map (kbd "C-s") 'consult-line)
-(define-key my-key-map (kbd "M-y") 'consult-yank-pop)
-(define-key my-key-map (kbd "C-x b") 'consult-buffer)
-(define-key my-key-map (kbd "C-c b") 'consult-bookmark)
-(define-key my-key-map (kbd "C-c i") 'consult-imenu)
-(define-key my-key-map (kbd "C-c r") 'consult-recent-file)
-(define-key my-key-map (kbd "C-h M") 'consult-minor-mode-menu)
-(define-key minibuffer-local-map (kbd "C-l") 'my/minibuffer-backward-kill-word)
+(keymap-set my/key-map "C-s" 'consult-line)
+(keymap-set my/key-map "M-y" 'consult-yank-pop)
+(keymap-set my/key-map "C-x b" 'consult-buffer)
+(keymap-set my/key-map "C-c b" 'consult-bookmark)
+(keymap-set my/key-map "C-c i" 'consult-imenu)
+(keymap-set my/key-map "C-c r" 'consult-recent-file)
+(keymap-set my/key-map "C-h M" 'consult-minor-mode-menu)
 
-(define-key corfu-map (kbd "M-d") 'corfu-popupinfo-toggle)
-(define-key corfu-map (kbd "M-p") 'corfu-popupinfo-scroll-down)
-(define-key corfu-map (kbd "M-n") 'corfu-popupinfo-scroll-up)
+(keymap-set minibuffer-local-map "C-l" 'my/minibuffer-backward-kill-word)
+
+(keymap-set corfu-map "M-d" 'corfu-popupinfo-toggle)
+(keymap-set corfu-map "M-p" 'corfu-popupinfo-scroll-down)
+(keymap-set corfu-map "M-n" 'corfu-popupinfo-scroll-up)
 #+end_src
 
 ** Bindings for [[https://orgmode.org][Org]]
 
 #+begin_src emacs-lisp
-(define-key my-key-map (kbd "C-c a") 'org-agenda)
-(define-key my-key-map (kbd "C-c c") 'org-capture)
-(define-key my-key-map (kbd "C-c t")
+(keymap-set my/key-map "C-c a" 'org-agenda)
+(keymap-set my/key-map "C-c c" 'org-capture)
+(keymap-set my/key-map "C-c n"
   (lambda () (interactive) (org-agenda nil "n")))
 
-(define-key my-key-map (kbd "C-c j") 'org-journal-open-current-journal-file)
-(define-key my-key-map (kbd "C-c J") 'org-journal-new-entry)
+(keymap-set my/key-map "C-c j" 'org-journal-open-current-journal-file)
+(keymap-set my/key-map "C-c J" 'org-journal-new-entry)
 #+end_src
 
 ** Bindings for Base
 
 #+begin_src emacs-lisp
-(define-key my-key-map (kbd "C-c e") 'treemacs)
-(define-key my-key-map (kbd "C-M-f") 'toggle-frame-fullscreen)
-(define-key my-key-map (kbd "C-x k") 'my/kill-this-buffer-unless-scratch)
-(define-key my-key-map (kbd "C-c o") 'olivetti-mode)
-(define-key my-key-map (kbd "C-c m") 'magit-status)
-(define-key my-key-map (kbd "C->") 'er/expand-region)
-(define-key my-key-map (kbd "C-<") 'er/contract-region)
-(define-key my-key-map (kbd "C-c T") 'google-translate-at-point)
+(keymap-set my/key-map "C-c e" 'treemacs)
+(keymap-set my/key-map "C-M-f" 'toggle-frame-fullscreen)
+(keymap-set my/key-map "C-x k" 'my/kill-this-buffer-unless-scratch)
+(keymap-set my/key-map "C-c o" 'olivetti-mode)
+(keymap-set my/key-map "C-c m" 'magit-status)
+(keymap-set my/key-map "C->" 'er/expand-region)
+(keymap-set my/key-map "C-<" 'er/contract-region)
+(keymap-set my/key-map "C-c T" 'google-translate-at-point)
 
 (when (fboundp 'vterm)
   (dolist (n (number-sequence 1 9))
-    (define-key my-key-map (kbd (concat "M-" (int-to-string n)))
-      (lambda () (interactive) (switch-vterm n))))
-  (define-key my-key-map (kbd "M-`")
-    (lambda () (interactive) (switch-vterm 10))))
+    (keymap-set my/key-map (concat "M-" (int-to-string n))
+      (lambda () (interactive) (my/switch-vterm n))))
+  (keymap-set my/key-map "M-`"
+    (lambda () (interactive) (my/switch-vterm 10))))
 
 (add-hook 'ielm-mode-hook
           (lambda ()
-            (define-key my-key-map (kbd "C-j") 'ielm-return)))
+            (keymap-set my/key-map "C-j" 'ielm-return)))
 #+end_src
