@@ -11,6 +11,114 @@
 ;;; -*- lexical-binding: t -*-
 #+end_src
 
+** Packages
+
+#+begin_src emacs-lisp
+(require 'package)
+(package-initialize)
+(custom-set-variables '(gnutls-algorithm-priority "normal:-vers-tls1.3"))
+
+;; 패키지 저장소 추가
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+
+(defvar my/pkg-list
+  '(auto-compile                  ; Emacs Lisp 라이브러리 컴파일러
+    which-key                     ; 사용가능한 키 바인딩 표시
+    vterm                         ; 터미널 에뮬레이터
+    magit                         ; Git 유틸
+    page-break-lines              ; 페이지 나누기(^L) 표시 변경
+    popup                         ; 툴팁
+    google-translate              ; 번역
+    htmlize                       ; decorations to HTML
+    exec-path-from-shell          ; 시스템 환경변수 로딩 지원
+    undo-tree                     ; 취소에 대한 트리 그래프
+    highlight-indentation         ; 들여쓰기 표시
+    cmake-mode                    ; 바이너리 컴파일
+    rfc-mode                      ; RFC
+    olivetti                      ; 화면 중앙으로 버퍼 변경 (80줄 표시)
+    multiple-cursors              ; 멀티 커서
+    paredit                       ; 괄호 편집 유틸
+    yasnippet-snippets            ; 스니펫 모음
+    expand-region                 ; 선택 영역 늘리고 줄이는 유틸
+    pdf-tools                     ; PDF 뷰어
+    org-mime                      ; Org export HTML 메일 발송
+
+    ;;;; Evil
+    evil                          ; Vim mode support
+    evil-collection               ; Evil Collection
+    evil-org                      ; Evil org
+
+    ;;;; File Manager
+    projectile                    ; 프로젝트 관리 네비게이션
+    treemacs                      ; 트리 형식의 파일 관리 매니저
+    treemacs-evil                 ; treemacs evil 통합
+    treemacs-projectile           ; treemacs projectile 통합
+
+    ;;; RSS Feed
+    elfeed                        ; rss feed 리더기
+    elfeed-org                    ; elfeed org형식의 인덱스
+    elfeed-summary                ; elfeed 대시보드
+
+    ;;; Org Extension
+    org-journal                   ; 일정관리
+    org-jira                      ; Jira
+    ox-gfm                        ; github 스타일의 마크다운 내보내기
+
+    ;;;; Eglot
+    consult-eglot
+
+    ;;; LSP
+    ;; lsp-mode                      ; LSP mode
+    ;; lsp-ui                        ; LSP UI
+    ;; lsp-treemacs                  ; LSP treemacs 통합
+    ;; lsp-java                      ; LSP Java
+    ;; dap-mode                      ; LSP Debug
+    ;; flycheck                      ; 문법 오류 검사
+
+    ;;;; Go
+    go-mode                       ; Go 모드
+    ob-go                         ; Go org babel
+    go-tag                        ; Go 태그 자동 생성
+
+    ;;;; Completion
+    consult
+    consult-projectile
+    marginalia
+    embark
+    embark-consult
+    orderless
+    vertico
+    corfu
+    corfu-terminal
+
+    ;;;; Theme
+    zenburn-theme
+
+    ;;;; File Syntax
+    adoc-mode
+    js2-mode
+    json-mode
+    k8s-mode
+    markdown-mode
+    dockerfile-mode
+    groovy-mode
+    plantuml-mode
+    vimrc-mode)
+  "설치 패키지 리스트")
+
+;; (dolist (pkg '(company counsel counsel-projectile ivy-rich))
+;;   (add-to-list 'my/pkg-list pkg))
+
+(when (eq system-type 'darwin)
+  (add-to-list 'my/pkg-list 'reveal-in-osx-finder))
+
+(let ((pkg-list (seq-remove 'package-installed-p my/pkg-list)))
+      (when pkg-list
+        (print pkg-list)
+        (package-refresh-contents)
+        (mapc 'package-install pkg-list)))
+#+end_src
+
 ** Functions
 
 <<sec:defuns>>
@@ -90,15 +198,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (with-temp-buffer
     (insert-file-contents path)
     (buffer-string)))
-
-(defun my/org-store-link ()
-  "파일 라인 정보로 링크 복사"
-  (interactive)
-  (kill-new
-   (format "file:%s:%d"
-           (buffer-file-name)
-           (save-restriction
-             (widen) (line-number-at-pos)))))
 #+end_src
 
 ** Better defaults
@@ -117,7 +216,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
  scroll-margin 1                               ; Space between cursor and top/bottom
  sentence-end-double-space nil                 ; No double space
  vc-handled-backends nil                       ; Ignore Default VCS (use magit)
- smerge-command-prefix "\C-cv"                 ; smerge 기본 단축키 셋
  ad-redefinition-action 'accept                ; ad-handle-definition Warning ignore
  display-time-format "%Y-%m-%dT%H:%M"          ; Powerline 날짜 포맷
  display-time-default-load-average nil         ; Do not display the load average
@@ -175,10 +273,14 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (column-number-mode 1)
 (delete-selection-mode 1)
 (dirtrack-mode 1)
+;; (global-so-long-mode 1)
 (global-display-line-numbers-mode 1)
 (recentf-mode 1)
 (show-paren-mode 1)
 (display-time-mode 1)
+
+(which-key-mode 1)
+(yas-global-mode 1)
 #+end_src
 
 라인에서 마이너 모드 숨김처리
@@ -200,7 +302,19 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
             (throw 'done t)))
         mode-line-modes))
 
-;;(minor-mode-blackout-mode 1)
+;; (minor-mode-blackout-mode 1)
+#+end_src
+
+** Undo
+
+#+begin_src emacs-lisp
+(defun undo-tree-mode-setup ()
+  (setq undo-tree-visualizer-diff t
+        undo-tree-visualizer-timestamps t
+        undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
+  (global-undo-tree-mode 1))
+
+(add-hook 'after-init-hook 'undo-tree-mode-setup)
 #+end_src
 
 ** DB
@@ -214,58 +328,6 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
       sql-ms-login-params '(server port user database))
 #+end_src
 
-** Base Packages
-
-#+begin_src emacs-lisp
-;; Emacs Lisp 라이브러리 컴파일러
-(use-package auto-compile)
-;; 바이너리 컴파일
-(use-package cmake-mode)
-;; 사용가능한 키 바인딩 표시
-(use-package which-key
-  :config
-  (which-key-mode 1))
-;; Git 유틸
-(use-package magit
-  :config
-  ;; gpg-sign 추가하도록 구성
-  (setq transient-default-level 5))
-;; 페이지 나누기(^L) 표시 변경
-(use-package page-break-lines)
-;; 툴팁
-(use-package popup)
-;; decorations to HTML
-(use-package htmlize)
-;; 들여쓰기 표시
-(use-package highlight-indentation)
-;; RFC
-(use-package rfc-mode)
-;; 멀티 커서
-(use-package multiple-cursors)
-;; 괄호 편집 유틸
-(use-package paredit)
-;; 스니펫 모음
-(use-package yasnippet-snippets
-  :config
-  (yas-global-mode 1))
-;; 선택 영역 늘리고 줄이는 유틸
-(use-package expand-region)
-
-(use-package reveal-in-osx-finder
-  :if (eq system-type 'drawin))
-#+end_src
-
-** Undo
-
-#+begin_src emacs-lisp
-(use-package undo-tree
-  :config
-  (setq undo-tree-visualizer-diff t
-        undo-tree-visualizer-timestamps t
-        undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
-  (global-undo-tree-mode 1))
-#+end_src
-
 ** Visual
 
 #+begin_src emacs-lisp
@@ -274,214 +336,193 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
     (before disable-before-load
             (theme &optional no-confirm no-enable) activate)
   (mapc 'disable-theme custom-enabled-themes))
+
+(load-theme 'zenburn t)
 #+end_src
 
 ** Environment
 
 #+begin_src emacs-lisp
-(use-package exec-path-from-shell
-  :if (memq window-system '(mac ns x pgtk))
-  :config
-  (setq exec-path-from-shell-variables '( "PATH"
-                                          "TMPDIR"
-                                          "GOROOT"
-                                          "GOPATH"
-                                          "JAVA_HOME"))
-  (add-hook 'after-init-hook (lambda () (exec-path-from-shell-initialize))))
+(defun my-exec-path-from-shell-initialize ()
+  (when (memq window-system '(mac ns x pgtk))
+    (setq exec-path-from-shell-variables '( "PATH"
+                                            "TMPDIR"
+                                            "GOROOT"
+                                            "GOPATH"
+                                            "JAVA_HOME"))
+    (exec-path-from-shell-initialize)))
+(add-hook 'after-init-hook 'my-exec-path-from-shell-initialize)
 #+end_src
 
 ** Evil
 
 #+begin_src emacs-lisp
-(use-package evil
-  :init
-  (setq evil-want-integration t
-        evil-want-keybinding nil
-        evil-undo-system 'undo-tree)
-  :config
-  (evil-mode 1)
-  (evil-ex-define-cmd "q" 'kill-this-buffer)
-  (evil-ex-define-cmd "quit" 'evil-quit))
+(setq evil-want-integration t)
+(setq evil-want-keybinding nil)
 
-(use-package evil-collection
-  :after (evil)
-  :config
-  (evil-collection-init))
+(require 'evil)
+(require 'evil-collection)
+(setq evil-undo-system 'undo-tree)
 
-(use-package evil-org
-  :after (evil org-agenda)
-  :config
-  (add-hook 'org-mode-hook 'evil-org-mode)
-  (use-package evil-org-agenda
-    :straight (:type built-in)
-    :config
-    (evil-org-agenda-set-keys))
-  (evil-org-set-key-theme '(navigation insert textobjects additional calendar)))
+;; evil-collection mu4e 1.10 버전 호환성 이슈
+(defun mu4e--main-action-str (str &optional func-or-shortcut))
+(defun evil-collection-mu4e-update-main-view@override())
+(advice-add 'evil-collection-mu4e-update-main-view :override #'evil-collection-mu4e-update-main-view@override)
+
+(evil-collection-init)
+(evil-mode 1)
+
+(require 'evil-org)
+(add-hook 'org-mode-hook 'evil-org-mode)
+(evil-org-set-key-theme '(navigation insert textobjects additional calendar))
+
+(require 'evil-org-agenda)
+(evil-org-agenda-set-keys)
+
+(evil-ex-define-cmd "q" 'kill-this-buffer)
+(evil-ex-define-cmd "quit" 'evil-quit)
 #+end_src
 
 ** [[https://github.com/bastibe/org-journal][Journal]]
 
 #+begin_src emacs-lisp
-(use-package org-journal
-  :config
-  (setq org-journal-dir "~/org/journal/"
-        org-journal-date-format "%A, %Y-%m-%d"
-        org-journal-search-result-date-format "%A, %Y-%m-%d"
-        org-journal-time-format "<%Y-%m-%d %a %H:%M>"
-        org-journal-file-format "%Y/%m/%Y%m%d.org"
-        org-journal-file-type 'weekly
-        org-journal-file-header "#+TITLE: %Y.%m Journal\n#+OPTIONS: toc:nil ^:nil \\n:t"
-        org-journal-enable-agenda-integration t)
-  ;; 캘린더 설정
-  (custom-set-faces
-   '(calendar-today ((t (:background "#CC9393" :underline t))))
-   '(org-journal-calendar-entry-face ((t (:foreground "#BDE0F3" :slant italic))))))
-#+end_src
+(require 'org-journal)
 
-** Projectile
+(setq org-journal-dir "~/org/journal/"
+      org-journal-date-format "%A, %Y-%m-%d"
+      org-journal-search-result-date-format "%A, %Y-%m-%d"
+      org-journal-time-format "<%Y-%m-%d %a %H:%M>"
+      org-journal-file-format "%Y/%m/%Y%m%d.org"
+      org-journal-file-type 'weekly
+      org-journal-file-header "#+TITLE: %Y.%m Journal\n#+OPTIONS: toc:nil ^:nil \n:t"
+      org-journal-enable-agenda-integration t)
 
-#+begin_src emacs-lisp
-(use-package projectile
-  :config
-  (setq projectile-globally-ignored-directories
-        '(".git"
-          ".vscode"
-          ".idea"
-          ".svn"
-          ".tox"
-          ".cache"
-          "vendor")))
+;; 캘린더 설정
+(custom-set-faces
+ '(calendar-today ((t (:background "#CC9393" :underline t))))
+ '(org-journal-calendar-entry-face ((t (:foreground "#BDE0F3" :slant italic)))))
 #+end_src
 
 ** Completion
 
 #+begin_src emacs-lisp
-(use-package consult
-  :config
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-  ;; (setq xref-show-xrefs-function #'consult-xref
-  ;;       xref-show-definitions-function #'consult-xref)
-  (advice-add #'register-preview :override #'consult-register-window))
+(require 'consult)
+(require 'savehist)
+(savehist-mode 1)
 
-(use-package savehist
-  :config
-  (savehist-mode 1))
+(setq register-preview-delay 0.5
+      register-preview-function #'consult-register-format)
+;; (setq xref-show-xrefs-function #'consult-xref
+;;       xref-show-definitions-function #'consult-xref)
 
-(use-package marginalia
-  :config
-  (marginalia-mode 1))
+(advice-add #'register-preview :override #'consult-register-window)
 
-;; (use-package embark)
-;; (use-package embark-consult
-;;   :after (embark consult)
-;;   :init
-;;   (setq prefix-help-command #'embark-prefix-help-command
-;;         embark-indicators
-;;         '(embark-highlight-indicator
-;;           embark-isearch-highlight-indicator
-;;           embark-minimal-indicator)))
+(require 'marginalia)
+(marginalia-mode 1)
 
-(use-package orderless
-  :config
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+(require 'embark)
+(require 'embark-consult)
+(setq prefix-help-command #'embark-prefix-help-command
+      embark-indicators
+      '(embark-highlight-indicator
+        embark-isearch-highlight-indicator
+        embark-minimal-indicator))
 
-(use-package vertico
-  :config
-  (setq vertico-count-format '("%-5s " . "%2$s")
-        vertico-resize nil)
-  (vertico-mode 1))
+(require 'orderless)
+(setq completion-styles '(orderless basic)
+      completion-category-defaults nil
+      completion-category-overrides '((file (styles partial-completion))))
 
-(use-package consult-projectile
-  :after (consult projectile)
-  :config
-  (defcustom consult-projectile-key-bindings
-    '((projectile-find-file        . consult-projectile-find-file)
-      (projectile-find-dir         . consult-projectile-find-dir)
-      (projectile-switch-to-buffer . consult-projectile-switch-to-buffer)
-      (projectile-switch-project   . consult-projectile-switch-project)
-      (projectile-grep             . consult-grep)
-      (projectile-ripgrep          . consult-ripgrep)
-      (" "                         . consult-projectile)
-      ("si"                        . consult-git-grep)
-      ("Oa"                        . consult-org-agenda))
-    "Like counsel-projectile-key-bindings"
-    :type '(alist :key-type (choice (function :tag "Projectile command")
-                                    key-sequence)
-                  :value-type (function :tag "Consult-projectile command"))
-    :group 'consult-projectile)
+(require 'vertico)
+(vertico-mode 1)
+(setq vertico-count-format '("%-5s " . "%2$s")
+      vertico-resize nil)
 
-  (define-minor-mode consult-projectile-mode
-    ""
-    :group 'consult-projectile
-    :require 'consult-projectile
-    :global t
-    (cond
-     (consult-projectile-mode
-      (projectile-mode)
-      (dolist (binding consult-projectile-key-bindings)
-        (if (functionp (car binding))
-            (define-key projectile-mode-map `[remap ,(car binding)] (cdr binding))
-          (define-key projectile-command-map (car binding) (cdr binding)))))
-     (t
-      (dolist (binding consult-projectile-key-bindings)
-        (if (functionp (car binding))
-            (define-key projectile-mode-map `[remap ,(car binding)] nil)
-          (define-key projectile-command-map (car binding) nil)))
-      (projectile-mode -1))))
-  (consult-projectile-mode 1))
+(require 'consult-projectile)
+(defcustom consult-projectile-key-bindings
+  '((projectile-find-file        . consult-projectile-find-file)
+    (projectile-find-dir         . consult-projectile-find-dir)
+    (projectile-switch-to-buffer . consult-projectile-switch-to-buffer)
+    (projectile-switch-project   . consult-projectile-switch-project)
+    (projectile-grep             . consult-grep)
+    (projectile-ripgrep          . consult-ripgrep)
+    (" "                         . consult-projectile)
+    ("si"                        . consult-git-grep)
+    ("Oa"                        . consult-org-agenda))
+  "Like counsel-projectile-key-bindings"
+  :type '(alist :key-type (choice (function :tag "Projectile command")
+                                  key-sequence)
+                :value-type (function :tag "Consult-projectile command"))
+  :group 'consult-projectile)
 
+(define-minor-mode consult-projectile-mode
+  ""
+  :group 'consult-projectile
+  :require 'consult-projectile
+  :global t
+  (cond
+   (consult-projectile-mode
+    (projectile-mode)
+    (dolist (binding consult-projectile-key-bindings)
+      (if (functionp (car binding))
+          (define-key projectile-mode-map `[remap ,(car binding)] (cdr binding))
+        (define-key projectile-command-map (car binding) (cdr binding)))))
+   (t
+    (dolist (binding consult-projectile-key-bindings)
+      (if (functionp (car binding))
+          (define-key projectile-mode-map `[remap ,(car binding)] nil)
+        (define-key projectile-command-map (car binding) nil)))
+    (projectile-mode -1))))
 
-(use-package corfu
-  :config
-  (setq corfu-cycle t
-        corfu-auto t
-        corfu-count 15
-        corfu-auto-delay 0)
-  (global-corfu-mode 1))
+(consult-projectile-mode 1)
 
-(use-package corfu-terminal
-  :after (corfu)
-  :config
-  (unless (display-graphic-p)
-    (corfu-terminal-mode +1)))
+(require 'corfu)
+(require 'corfu-popupinfo)
+(require 'corfu-terminal)
+(global-corfu-mode 1)
+
+(setq corfu-cycle t
+      corfu-auto t
+      corfu-count 15
+      corfu-auto-delay 0)
+(unless (display-graphic-p)
+  (corfu-terminal-mode +1))
 #+end_src
 
 ** Translate
 
 #+begin_src emacs-lisp
-(use-package google-translate
-  :config
-  (defun google-translate--search-tkk ()
-    "https://github.com/atykhonov/google-translate/issues/137"
-    (list 430675 2721866130))
+(require 'google-translate)
+(require 'google-translate-default-ui)
 
-  (setq google-translate-default-source-language "en"
-        google-translate-default-target-language "ko"
-        google-translate-output-destination nil))
+(defun google-translate--search-tkk ()
+  "https://github.com/atykhonov/google-translate/issues/137"
+  (list 430675 2721866130))
+
+(setq google-translate-default-source-language "en"
+      google-translate-default-target-language "ko"
+      google-translate-output-destination nil)
 #+end_src
 
 ** Treemacs
 
 #+begin_src emacs-lisp
-(use-package treemacs
-  :config
-  ;; https://github.com/Alexander-Miller/treemacs#configuration
-  (setq treemacs-read-string-input 'from-minibuffer ; 이맥스 미니버퍼
-        treemacs-litter-directories '("/vendor" "/node_modules")
-        treemacs-no-png-images t))
-(use-package treemacs-evil)
-(use-package treemacs-projectile)
+(require 'treemacs)
+(require 'treemacs-evil)
+(require 'treemacs-projectile)
+
+;; https://github.com/Alexander-Miller/treemacs#configuration
+(setq treemacs-read-string-input 'from-minibuffer ; 이맥스 미니버퍼
+      treemacs-litter-directories '("/vendor" "/node_modules")
+      treemacs-no-png-images t)
 #+end_src
 
 ** Olivetti
 
 #+begin_src emacs-lisp
-(use-package olivetti
-  :config
-  (setq-default olivetti-body-width 122)
+(with-eval-after-load 'olivetti
+  (setq-default olivetti-body-width 82)
+  (remove-hook 'olivetti-mode-on-hook 'visual-line-mode)
   (add-hook 'olivetti-mode-on-hook (lambda () (display-line-numbers-mode 0)))
   (add-hook 'olivetti-mode-off-hook (lambda () (display-line-numbers-mode 1))))
 #+end_src
@@ -489,20 +530,19 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Ibuffer
 
 #+begin_src emacs-lisp
-(use-package ibuffer
-  :config
-  (defalias 'list-buffers 'ibuffer)
+(defalias 'list-buffers 'ibuffer)
+(defun ibuffer-mode-setup ()
   (setq ibuffer-expert t
         ibuffer-default-sorting-mode 'major-mode)
-  (add-hook 'ibuffer-mode-hook (lambda () (ibuffer-auto-mode 1))))
+  (ibuffer-auto-mode 1))
+(add-hook 'ibuffer-mode-hook 'ibuffer-mode-setup)
 #+end_src
 
 ** Vterm
 
 #+begin_src emacs-lisp
-(use-package vterm
-  :if (not (eq system-type 'windows-nt))
-  :config
+(when (memq window-system '(mac ns x pgtk))
+  (require 'vterm)
   (setq vterm-always-compile-module t
         vterm-timer-delay 0.01)
 
@@ -517,71 +557,81 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
             (t (vterm buffer-name)
                (rename-buffer buffer-name)))))
 
-  (add-hook 'vterm-mode-hook (lambda () (display-line-numbers-mode 0))))
+  (add-hook 'vterm-mode-hook
+            (lambda () (display-line-numbers-mode 0))))
 #+end_src
 
 ** Elfeed
 
 #+begin_src emacs-lisp
-(use-package elfeed
-  :config
-  (setq elfeed-search-filter "@6-month-ago +unread"
-        elfeed-show-entry-switch 'switch-to-buffer
-        elfeed-search-title-max-width 100)
+(require 'elfeed)
+(setq-default elfeed-search-filter "@1-month-ago +unread ")
+(setq elfeed-show-entry-switch 'switch-to-buffer) ;; display-buffer
 
-  (require 'elfeed-link)
+(require 'elfeed-org)
+(elfeed-org)
+(setq rmh-elfeed-org-files (list "~/.emacs.d/elfeed.org"))
+#+end_src
 
-  ;; c.f. https://meliache.de/posts/2021/08/emacs-elfeed-browse-specifically-tagged-feeds-in-eww-automatically/
-  (defun my/elfeed-show-eww-if-tag (entry tag)
-    "Browse elfeed ENTRY in eww if it is tagged with TAG."
-    (when (member tag (elfeed-entry-tags entry))
-      (let ((browse-url-browser-function #'eww-browse-url))
-        (elfeed-show-visit))))
-  (defun my/elfeed-show-eww-if-tag-is-browse (entry)
-    "Browse elfeed ENTRY in eww if it has the tag `browse'."
-    (my/elfeed-show-eww-if-tag entry 'browse))
-  (advice-add #'elfeed-show-entry :after #'my/elfeed-show-eww-if-tag-is-browse)
+** Projectile
 
-  ;; From http://pragmaticemacs.com/emacs/star-and-unstar-articles-in-elfeed/
-  (defalias 'elfeed-toggle-star
-    (elfeed-expose #'elfeed-search-toggle-all 'star))
-  (defalias 'elfeed-toggle-trash
-    (elfeed-expose #'elfeed-search-toggle-all 'trash))
-  (defface elfeed-search-star-title-face
-    ;; '((t :foreground "#F77" ))
-    '((t :inherit font-lock-constant-face))
-    "Marks a starred Elfeed entry.")
-  (defface elfeed-search-trash-title-face
-    '((t :inherit font-lock-comment-face :strike-through t))
-    "Marks a trashed Elfeed entry.")
-  (push '(star elfeed-search-star-title-face) elfeed-search-face-alist)
-  (push '(trash elfeed-search-trash-title-face) elfeed-search-face-alist)
-
-  ;; From: https://github.com/skeeto/elfeed/issues/11
-  (defun my/elfeed-db-purge ()
-    "trash 태그를 가진 항목의 DB삭제"
-    (interactive)
-    (with-elfeed-db-visit (entry _)
-      (let ((ref (elfeed-entry-content entry)))
-        (when (and (elfeed-ref-p ref) (memq 'trash (elfeed-entry-tags entry)))
-          (elfeed-ref-delete ref))))))
-
-(use-package elfeed-org
-  :after (elfeed org)
-  :config
-  (setq rmh-elfeed-org-files (list "~/.emacs.d/elfeed.org"))
-  (elfeed-org))
-
-(use-package elfeed-summary
-  :after (elfeed))
+#+begin_src emacs-lisp
+(require 'projectile)
+(when (executable-find "rg")
+  (setq projectile-globally-ignored-directories
+        '(".git"
+          ".vscode"
+          ".idea"
+          ".svn"
+          ".tox"
+          ".cache"
+          "vendor")
+        projectile-generic-command
+        (let ((rg-cmd ""))
+          (dolist (dir projectile-globally-ignored-directories)
+            (setq rg-cmd (format "%s --glob '!%s'" rg-cmd dir)))
+          (concat "rg -0 --files --color=never --hidden " rg-cmd))
+        projectile-git-command projectile-generic-command))
 #+end_src
 
 ** Eglot
 
 #+begin_src emacs-lisp
-(use-package eglot)
-(use-package consult-eglot
-  :after (eglot consult))
+(require 'eglot)
+(require 'consult-eglot)
+(setq-default eglot-workspace-configuration
+              '((:gopls .
+                        ((staticcheck . t)
+                         (matcher . "CaseSensitive")))))
+#+end_src
+
+** COMMENT Lsp
+
+#+begin_src emacs-lisp
+(setq lsp-keymap-prefix "C-c l")
+(require 'lsp-mode)
+(require 'lsp-ui)
+(require 'flycheck)
+
+(with-eval-after-load 'lsp-mode
+  (setq lsp-idle-delay 0.200
+        lsp-log-io nil
+        lsp-ui-doc-enable nil
+        lsp-lens-enable nil
+        lsp-enable-links nil ; treemacs crash
+        lsp-ui-sideline-enable nil
+        lsp-enable-symbol-highlighting nil
+        lsp-headerline-breadcrumb-enable nil
+        lsp-modeline-code-actions-enable nil
+        lsp-completion-provider :none ;; use corfu
+        lsp-diagnostics-provider :flycheck)
+
+  (lsp-enable-which-key-integration)
+
+  ;; https://emacs-lsp.github.io/lsp-mode/page/file-watchers
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.vendor\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.artifacts\\'")
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\][^/\\\\]*\\.\\(json\\|html\\|yaml\\)$"))
 #+end_src
 
 ** Lisp
@@ -598,140 +648,142 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ** Go
 
 #+begin_src emacs-lisp
-(use-package go-mode
-  :after (eglot)
-  :config
-  (defun my/go-mode-setup()
-    (setq tab-width 2
-          compile-command "go test -v .")
+(require 'go-mode)
+(defun go-mode-setup()
+  (setq tab-width 2
+        compile-command "go test -v .")
 
-    ;; (add-hook 'before-save-hook #'lsp-format-buffer)
-    ;; (add-hook 'before-save-hook #'lsp-organize-imports)
-    ;; (add-hook 'before-save-hook 'gofmt-before-save)
-    ;; (add-hook 'go-mode-hook 'lsp-deferred)
+  (hs-minor-mode t)
+  (local-set-key (kbd "C-c C-c") 'compile)
+  (add-hook 'before-save-hook #'gofmt-before-save))
 
-    (local-set-key (kbd "C-c C-c") 'compile))
-  (add-hook 'go-mode-hook 'hs-minor-mode)
-  (add-hook 'go-mode-hook 'my/go-mode-setup))
+(add-hook 'go-mode-hook 'go-mode-setup)
 
-(use-package go-tag)
-(use-package ob-go)
+;; go install honnef.co/go/tools/cmd/staticcheck@latest
+;; (require 'flymake-go-staticcheck)
+;; (add-hook 'go-mode-hook #'flymake-go-staticcheck-enable)
+;; (add-hook 'go-mode-hook #'flymake-mode)
 
-;; cf. https://github.com/golang/tools/blob/master/gopls/doc/emacs.md
 (with-eval-after-load 'eglot
   (require 'project)
-  (setq-default eglot-workspace-configuration
-                '((:gopls .
-                          ((staticcheck . t)
-                           (matcher . "CaseSensitive")))))
   (defun my/project-find-go-module (dir)
     (when-let ((root (locate-dominating-file dir "go.mod")))
       (cons 'go-module root)))
+
   (cl-defmethod project-root ((project (head go-module)))
     (cdr project))
-  (add-hook 'project-find-functions 'my/project-find-go-module)
 
-  (defun my/eglot-go-before-save()
+  (add-hook 'project-find-functions #'my/project-find-go-module)
+
+  (defun my/eglot-before-save()
     (interactive)
     (when (eq major-mode 'go-mode)
       (eglot-format-buffer)
-      (eglot-code-actions nil nil "source.organizeImports" t)))
-  (add-hook 'before-save-hook 'my/eglot-go-before-save)
-  (add-hook 'go-mode-hook 'eglot-ensure))
+      (call-interactively 'eglot-code-action-organize-imports)))
+
+  (add-hook 'before-save-hook #'my/eglot-before-save)
+  (add-hook 'go-mode-hook #'eglot-ensure))
+
+
+;; (with-eval-after-load 'lsp-mode
+;;   ;; go install github.com/go-delve/delve/cmd/dlv@latest
+;;   (require 'dap-dlv-go)
+;;   (add-hook 'before-save-hook #'lsp-format-buffer)
+;;   (add-hook 'before-save-hook #'lsp-organize-imports)
+;;   (add-hook 'go-mode-hook 'lsp-deferred))
 #+end_src
 
-** Java
+** COMMENT Java
 
 #+begin_src emacs-lisp
-(use-package eglot-java
-  :config
-  ;; (setq lombok-jar-path (expand-file-name "bin/lombok-1.18.jar" user-emacs-directory))
-  ;; (add-to-list 'eglot-java-eclipse-jdt-args (concat "-javaagent:" lombok-jar-path))
-  (add-hook 'java-mode-hook 'eglot-java-mode))
+(require 'lsp-java)
+(add-hook 'java-mode-hook 'lsp)
+
+;; JDK 8 지원 버전
+;; (setq lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/0.57.0/jdt-language-server-0.57.0-202006172108.tar.gz")
+
+;; JDK latest
+(setq lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/snapshots/jdt-language-server-latest.tar.gz")
+
+;; spring boot
+(require 'lsp-java-boot)
+(add-hook 'lsp-mode-hook 'lsp-lens-mode)
+(add-hook 'java-mode-hook 'lsp-java-boot-lens-mode)
+
+;; lombok설정. 절대 경로 필요
+(setq lombok-jar-path (expand-file-name "bin/lombok-1.18.jar" user-emacs-directory))
+;; (setq lsp-java-vmargs '("-noverify"
+;;                         "-Xmx1G"
+;;                         "-XX:+UseG1GC"
+;;                         "-XX:+UseStringDeduplication"))
+(add-to-list 'lsp-java-vmargs (concat "-javaagent:" lombok-jar-path))
 #+end_src
 
-** File format
-
+** Syntax
 #+begin_src emacs-lisp
 (when (image-type-available-p 'svg)
   (require 'svg))
 
-(use-package pdf-tools
-  :magic ("%PDF" . pdf-view-mode)
-  :config
-  (pdf-tools-install :no-query))
+;; json
+(add-hook 'json-mode-hook 'highlight-indentation-mode)
+(with-eval-after-load 'json-mode
+  (setq js-indent-level tab-width))
 
-(use-package json-mode
-  :config
-  (setq js-indent-level tab-width)
-  (add-hook 'json-mode-hook 'highlight-indentation-mode))
+;; yaml
+(add-hook 'yaml-mode-hook 'highlight-indentation-mode)
 
-(use-package yaml-mode
-  :config
-  (add-hook 'yaml-mode-hook 'highlight-indentation-mode))
+;; plantuml
+(require 'plantuml-mode)
+(let ((jar-file "~/.emacs.d/bin/plantuml.jar"))
+  (setq plantuml-default-exec-mode 'jar
+        plantuml-jar-path jar-file
+        org-plantuml-jar-path jar-file))
 
-(use-package plantuml-mode
-  :config
-  (let ((jar-file "~/.emacs.d/bin/plantuml.jar"))
-    (setq plantuml-default-exec-mode 'jar
-          plantuml-jar-path jar-file
-          org-plantuml-jar-path jar-file)))
-
-(use-package k8s-mode
-  :config
+;; k8s
+(with-eval-after-load 'k8s-mode
   (setq k8s-indent-offset nil
         k8s-site-docs-url "https://kubernetes.io/docs/reference/generated/kubernetes-api/"))
-
-(use-package markdown-mode
-  :config
-  (setq markdown-command "multimarkdown"))
-
-(use-package adoc-mode)
-(use-package js2-mode)
-(use-package dockerfile-mode)
-(use-package groovy-mode)
-(use-package vimrc-mode)
 #+end_src
-
 ** Org
 
 #+begin_src emacs-lisp
-(use-package org
-  :config
-  (setq org-startup-folded t
-        org-adapt-indentation nil
-        org-src-fontify-natively t
-        org-src-tab-acts-natively t
-        org-confirm-babel-evaluate nil
-        org-edit-src-content-indentation 0
-        org-imenu-depth 3
-        org-log-done 'time
-        org-babel-go-command "GO111MODULE=off go"
-        org-babel-default-header-args:sh `((:noweb . "yes") (:results . "output"))
-        org-agenda-window-setup 'current-window
-        org-agenda-start-with-log-mode '(closed)
-        org-agenda-tags-column 0       ; auto bug fix
-        org-todo-keywords '((sequence "TODO(t)" "INPROGRESS(i)" "PAUSED(p)" "|"
-                                      "REVIEW(r)" "DONE(d)" "CANCELED(c)"))
-        org-agenda-files '("~/org/inbox.org"
-                           "~/org/gtd.org"
-                           "~/org/tickler.org")
-        org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
-                             ("~/org/someday.org" :level . 1)
-                             ("~/org/tickler.org" :maxlevel . 2))
-        org-capture-templates '(("t" "TODO [inbox]" entry (file "~/org/inbox.org") "* TODO %i%?")
-                                ("T" "Tickler" entry (file "~/org/tickler.org") "* %i%? \n %U"))
-        org-tag-alist '(("crypt" . ?c)
-                        ("@home" . ?h)
-                        ("@office" . ?o))
-        org-html-postamble nil
-        org-html-use-infojs 'when-configured
-        org-html-head-include-default-style t
-        org-html-doctype "html5"
-        org-html-head "
-<link rel=\"stylesheet\" href=\"https://orgmode.org/worg/style/worg-classic.css\" type=\"text/css\" />
-<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
+(setq org-startup-folded t
+      org-adapt-indentation nil
+      org-src-fontify-natively t
+      org-src-tab-acts-natively t
+      org-confirm-babel-evaluate nil
+      org-edit-src-content-indentation 0
+      org-imenu-depth 3
+      org-log-done 'time
+      org-babel-default-header-args:sh `((:noweb . "yes") (:results . "output"))
+      org-babel-go-command "GO111MODULE=off go"
+      org-agenda-window-setup 'current-window
+      org-agenda-start-with-log-mode '(closed)
+      org-agenda-tags-column 0       ; auto bug fix
+      org-todo-keywords '((sequence "TODO(t)" "INPROGRESS(i)" "PAUSED(p)" "|"
+                                    "DONE(d)" "CANCELED(c)"))
+      org-agenda-files '("~/org/inbox.org" "~/org/gtd.org" "~/org/tickler.org")
+      org-refile-targets '(("~/org/gtd.org" :maxlevel . 1)
+                           ("~/org/someday.org" :level . 1)
+                           ("~/org/tickler.org" :maxlevel . 2))
+      org-capture-templates '(("t" "TODO [inbox]" entry (file "~/org/inbox.org") "* TODO %i%?")
+                              ("T" "Tickler" entry (file "~/org/tickler.org") "* %i%? \n %U"))
+      org-tag-alist '(("crypt" . ?c)
+                      ("@home" . ?h)
+                      ("@office" . ?o))
+      org-html-postamble nil
+      org-html-use-infojs 'when-configured
+      org-html-head-include-default-style t
+      org-html-doctype "html5"
+      org-html-head "<style>pre {background-color: #3f3f3f;color: #dcdccc;}</style>")
 
+(dolist (list
+         '(("sh" . "src sh\n")
+           ("u" . "src plantuml :file ?.png :cmdline -charset UTF-8\n")
+           ("t" . "src typescript :cmdline -t es6 \n")))
+  (add-to-list 'org-structure-template-alist list))
+
+(with-eval-after-load 'org
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((python . t)
@@ -743,31 +795,15 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
      (shell . t)
      (plantuml . t)))
 
-  (dolist (temp
-           '(("sh" . "src sh \n")
-             ("u" . "src plantuml :file ?.png :cmdline -charset UTF-8\n")
-             ("t" . "src typescript :cmdline -t es6 \n")))
-    (add-to-list 'org-structure-template-alist temp))
-  (require 'org-tempo)
-  (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n,")
-  (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
-
-(use-package epa-file
-  :after (org)
-  :straight (:type built-in)
-  :autoload epa-file-enable)
-
-(use-package org-crypt
-  :after (org)
-  :straight (:type built-in)
-  :config
+  (require 'org-crypt)
+  (org-crypt-use-before-save-magic)
   (setq epa-file-select-keys nil
         epg-pinentry-mode 'loopback
         auth-sources '((:source "~/.authinfo.gpg"))
         org-crypt-key nil
         org-tags-exclude-from-inheritance (quote ("crypt")))
+
   ;; 암호 항목에 대한 tangle 내보내기 문제 해결
-  (org-crypt-use-before-save-magic)
   (defun my/reveal-and-move-back ()
     (org-reveal)
     (goto-char my/old-point))
@@ -776,75 +812,62 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
     (add-hook 'after-save-hook 'my/reveal-and-move-back))
   (defun my/org-reveal-after-save-off ()
     (remove-hook 'after-save-hook 'my/reveal-and-move-back))
+
   (add-hook 'org-babel-pre-tangle-hook 'my/org-reveal-after-save-on)
-  (add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off))
+  (add-hook 'org-babel-post-tangle-hook 'my/org-reveal-after-save-off)
 
-(use-package ox-gfm
-  :after (org))
-
-(use-package org-tree-slide
-  :after (org))
+  (require 'org-tempo)
+  (require 'ox-gfm)
+  (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n,")
+  (custom-set-variables `(org-emphasis-alist ',org-emphasis-alist)))
 #+end_src
 
 ** Mail
 
-- 설치 이후 =cd ~/.emacs.d/straight/repos/mu && sudo make install= 수행
-
 #+begin_src emacs-lisp
-(use-package mu4e
-  :if (not (eq system-type 'windows-nt))
-  ;; :straight (:type built-in)
-  :straight ( :host github
-              :repo "djcb/mu"
-              :branch "master"
-              :files ("build/mu4e/*.el")
-              :pre-build (("./autogen.sh") ("make")))
-  ;; :custom (mu4e-mu-binary "~/.emacs.d/straight/repos/mu/build/mu/mu")
-  :config
-  (setq read-mail-command 'mu4e
-        mail-user-agent 'mu4e-user-agent
-        mu4e-get-mail-command "mbsync -a"
-        mu4e-change-filenames-when-moving t
-        mu4e-confirm-quit nil
-        mu4e-context-policy 'pick-first
-        mu4e-completing-read-function 'completing-read
-        mu4e-search-full t
-        mu4e-search-include-related nil
-        mu4e-eldoc-support t
-        mu4e-notification-support t
-        mu4e-update-interval (* 2 60)
-        mu4e-attachment-dir "~/Downloads/"
-        mu4e-maildir-shortcuts '(("/Inbox" . ?i))
-        mu4e-headers-visible-lines 20
-        mu4e-headers-visible-columns 80
-        mu4e-headers-visible-lines 10
-        mu4e-headers-date-format "%Y-%m-%dT%H:%M"
-        mu4e-headers-fields '((:human-date . 16)
-                              (:flags      . 5)
-                              (:from       . 22)
-                              (:subject    . nil))))
+;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+(require 'mu4e nil :noerror)
+(require 'smtpmail)
 
-(use-package smtpmail
-  :config
-  (setq message-citation-line-format "%N @ %Y-%m-%dT%H:%M :\n"
-        message-citation-line-function 'message-insert-formatted-citation-line
-        message-send-mail-function 'smtpmail-send-it
-        message-kill-buffer-on-exit t)
+(setq read-mail-command 'mu4e
+      mail-user-agent 'mu4e-user-agent
+      mu4e-get-mail-command "mbsync -a"
+      mu4e-change-filenames-when-moving t
+      mu4e-confirm-quit nil
+      mu4e-context-policy 'pick-first
+      mu4e-completing-read-function 'completing-read
+      mu4e-search-full t
+      mu4e-search-include-related nil
+      mu4e-eldoc-support t
+      mu4e-notification-support t
+      mu4e-update-interval (* 2 60)
+      mu4e-attachment-dir "~/Downloads/"
+      mu4e-maildir-shortcuts '(("/Inbox" . ?i))
+      mu4e-headers-visible-lines 20
+      mu4e-headers-visible-columns 80
+      mu4e-headers-visible-lines 10
+      mu4e-headers-date-format "%Y-%m-%dT%H:%M"
+      mu4e-headers-fields '((:human-date . 16)
+                            (:flags      . 5)
+                            (:from       . 22)
+                            (:subject    . nil)))
 
-  (setq starttls-use-gnutls t
-        smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
-        smtpmail-default-smtp-server "smtp.gmail.com"
-        smtpmail-smtp-server "smtp.gmail.com"
-        smtpmail-smtp-service 587))
+(setq message-citation-line-format "%N @ %Y-%m-%dT%H:%M :\n"
+      message-citation-line-function 'message-insert-formatted-citation-line
+      message-send-mail-function 'smtpmail-send-it
+      message-kill-buffer-on-exit t)
 
-;; Org export HTML 메일 발송
-(use-package org-mime
-  :config
-  (add-hook 'org-mime-html-hook
-            (lambda ()
-              (org-mime-change-element-style
-               ;; zenburn => background-color: #3f3f3f;color: #dcdccc;
-               "pre" "border: 1px solid #eee;"))))
+(setq starttls-use-gnutls t
+      smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+      smtpmail-default-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-service 587)
+
+(add-hook 'org-mime-html-hook
+          (lambda ()
+            (org-mime-change-element-style
+             ;; zenburn => background-color: #3f3f3f;color: #dcdccc;
+             "pre" "border: 1px solid #eee;")))
 #+end_src
 
 * Binding
