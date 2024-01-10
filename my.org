@@ -538,9 +538,10 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (add-hook 'ibuffer-mode-hook 'ibuffer-mode-setup)
 #+end_src
 
-** Vterm
+** Shell
 
 #+begin_src emacs-lisp
+(defalias 'my/sh 'eshell)
 (when (memq window-system '(mac ns x pgtk))
   (require 'vterm)
   (setq vterm-always-compile-module t
@@ -549,16 +550,18 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
   (defadvice vterm (after kill-with-no-query nil activate)
     (set-process-query-on-exit-flag (get-buffer-process ad-return-value) nil))
 
-  (defun my/switch-vterm (n)
-    "vterm 버퍼 변경"
-    (let ((buffer-name (format "vterm<%d>" n)))
-      (cond ((get-buffer buffer-name)
-             (switch-to-buffer buffer-name))
-            (t (vterm buffer-name)
-               (rename-buffer buffer-name)))))
+  (defalias 'my/sh 'vterm)
 
   (add-hook 'vterm-mode-hook
             (lambda () (display-line-numbers-mode 0))))
+
+(defun my/switch-sh (n)
+  "shell 버퍼 변경"
+  (let ((buffer-name (format "sh<%d>" n)))
+    (cond ((get-buffer buffer-name)
+           (switch-to-buffer buffer-name))
+          (t (my/sh buffer-name)
+             (rename-buffer buffer-name)))))
 #+end_src
 
 ** Elfeed
@@ -955,12 +958,11 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 (keymap-set my/key-map "C-<" 'er/contract-region)
 (keymap-set my/key-map "C-c T" 'google-translate-at-point)
 
-(when (fboundp 'vterm)
-  (dolist (n (number-sequence 1 9))
-    (keymap-set my/key-map (concat "M-" (int-to-string n))
-      (lambda () (interactive) (my/switch-vterm n))))
-  (keymap-set my/key-map "M-`"
-    (lambda () (interactive) (my/switch-vterm 10))))
+(dolist (n (number-sequence 1 9))
+  (keymap-set my/key-map (concat "M-" (int-to-string n))
+              (lambda () (interactive) (my/switch-sh n))))
+(keymap-set my/key-map "M-`"
+            (lambda () (interactive) (my/switch-sh 10)))
 
 (add-hook 'ielm-mode-hook
           (lambda ()
