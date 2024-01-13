@@ -243,6 +243,9 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 ;; whitespace remove
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+(when (eq system-type 'windows-nt)
+  (setq custom-file "custom.el"))
+
 (when (eq system-type 'darwin)
   (setq ns-pop-up-frames nil
         mac-option-modifier nil
