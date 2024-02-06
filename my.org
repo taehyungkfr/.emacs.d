@@ -758,10 +758,14 @@ go install github.com/koron/iferr@master
 (add-to-list 'lsp-java-vmargs (concat "-javaagent:" lombok-jar-path))
 #+end_src
 
-** Syntax
+** File Syntax
 #+begin_src emacs-lisp
 (when (image-type-available-p 'svg)
   (require 'svg))
+
+;; pdf
+(pdf-tools-install :no-query)
+(add-hook 'pdf-view-mode-hook #'my/disable-line-numbers-mode)
 
 ;; json
 (add-hook 'json-mode-hook 'highlight-indentation-mode)
