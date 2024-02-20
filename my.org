@@ -581,6 +581,7 @@ Examples: (my/join-path \"/tmp\" \"a\" \"b.txt\") => /tmp/a/b.txt"
 #+begin_src emacs-lisp
 (require 'elfeed)
 (setq-default elfeed-search-filter "@1-month-ago +unread ")
+(setq elfeed-curl-extra-arguments '("--insecure"))
 (setq elfeed-show-entry-switch 'switch-to-buffer) ;; display-buffer
 
 (require 'elfeed-org)
